@@ -44,6 +44,7 @@
 		77052FCD2A1FF0D700B5D0C4 /* FeedAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FeedAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		77052FD12A1FF0D700B5D0C4 /* FeedAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAppUITests.swift; sourceTree = "<group>"; };
 		77052FD32A1FF0D700B5D0C4 /* FeedAppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAppUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		77052FE12A1FF17E00B5D0C4 /* FeedAppPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = FeedAppPackage; path = ../FeedAppPackage; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,10 +75,12 @@
 		77052FAA2A1FF0D600B5D0C4 = {
 			isa = PBXGroup;
 			children = (
+				77052FE02A1FF17E00B5D0C4 /* Packages */,
 				77052FB52A1FF0D600B5D0C4 /* FeedApp */,
 				77052FC62A1FF0D700B5D0C4 /* FeedAppTests */,
 				77052FD02A1FF0D700B5D0C4 /* FeedAppUITests */,
 				77052FB42A1FF0D600B5D0C4 /* Products */,
+				77052FE22A1FF1C100B5D0C4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -127,6 +130,21 @@
 			path = FeedAppUITests;
 			sourceTree = "<group>";
 		};
+		77052FE02A1FF17E00B5D0C4 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				77052FE12A1FF17E00B5D0C4 /* FeedAppPackage */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		77052FE22A1FF1C100B5D0C4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -143,6 +161,8 @@
 			dependencies = (
 			);
 			name = FeedApp;
+			packageProductDependencies = (
+			);
 			productName = FeedApp;
 			productReference = 77052FB32A1FF0D600B5D0C4 /* FeedApp.app */;
 			productType = "com.apple.product-type.application";
