@@ -9,12 +9,12 @@ import XCTest
 import Feed
 
 final class RemoteFeedLoaderTests: XCTestCase {
-
+    
     func test_init_doesNotRequestDataFromURL() {
         
         let url = URL(string: "https://a-given-url.com")!
         let (_, client) = makeSUT(url: url)
-
+        
         XCTAssertTrue(client.requestedURLs.isEmpty)
     }
     
@@ -44,7 +44,7 @@ final class RemoteFeedLoaderTests: XCTestCase {
         let (sut, client) = makeSUT()
         
         expetct(sut, toCompleteWith: .failure(.connectivity)) {
-        
+            
             let clientError = NSError(domain: "Test", code: 0)
             client.complete(with: clientError)
         }
@@ -53,13 +53,13 @@ final class RemoteFeedLoaderTests: XCTestCase {
     func test_load_deliversErrorOnNon200HTTPResponse() {
         
         let (sut, client) = makeSUT()
-
+        
         let samples = [199, 201, 300, 400, 500]
         
         samples.enumerated().forEach { index, code in
             
             expetct(sut, toCompleteWith: .failure(.invalidData)) {
-            
+                
                 client.complete(withStatusCode: code, at: index)
             }
         }
@@ -70,7 +70,7 @@ final class RemoteFeedLoaderTests: XCTestCase {
         let (sut, client) = makeSUT()
         
         expetct(sut, toCompleteWith: .failure(.invalidData)) {
-        
+            
             let invalidJSON = Data("invalid jsom".utf8)
             client.complete(withStatusCode: 200, data: invalidJSON)
         }
@@ -91,35 +91,21 @@ final class RemoteFeedLoaderTests: XCTestCase {
         
         let (sut, client) = makeSUT()
         
-        let item1 = FeedItem(
+        let item1 = makeItem(
             id: UUID(),
             imageURL: URL(string: "http://a-url.com")!)
         
-        let item1JSON = [
-            "id": item1.id.uuidString,
-            "image": item1.imageURL.absoluteString
-        ]
-        
-        let item2 = FeedItem(
+        let item2 = makeItem(
             id: UUID(),
             description: "a description",
             location: "a location",
             imageURL: URL(string: "http://another-url.com")!)
         
-        let item2JSON = [
-            "id": item2.id.uuidString,
-            "description": item2.description,
-            "location": item2.location,
-            "image": item2.imageURL.absoluteString
-        ]
-        
-        let itemsJSON = [
-            "items": [item1JSON, item2JSON]
-        ]
-        
-        expetct(sut, toCompleteWith: .success([item1, item2])) {
+        let items = [item1.model, item2.model]
+
+        expetct(sut, toCompleteWith: .success(items)) {
             
-            let json = try! JSONSerialization.data(withJSONObject: itemsJSON)
+            let json = makeItemsJSON([item1.json, item2.json])
             client.complete(withStatusCode: 200, data: json)
         }
     }
@@ -132,6 +118,29 @@ final class RemoteFeedLoaderTests: XCTestCase {
         let sut = RemoteFeedLoader(url: url, client: client)
         
         return (sut, client)
+    }
+    
+    private func makeItem(id: UUID, description: String? = nil, location: String? = nil, imageURL: URL) -> (model: FeedItem, json: [String: Any]) {
+        
+        let item = FeedItem(id: id, description: description, location: location, imageURL: imageURL)
+        let json = [
+            "id": id.uuidString,
+            "description": description,
+            "location": location,
+            "image": imageURL.absoluteString
+            
+        ].reduce(into: [String: Any]()) { partialResult, element in
+            
+            if let value = element.value { partialResult[element.key] = value }
+        }
+        
+        return (item, json)
+    }
+    
+    func makeItemsJSON(_ items: [[String: Any]]) -> Data {
+        
+        let json = ["items": items]
+        return try! JSONSerialization.data(withJSONObject: json)
     }
     
     private func expetct( _ sut: RemoteFeedLoader, toCompleteWith result: RemoteFeedLoader.Result, when action: () -> Void, file: StaticString = #filePath, line: UInt = #line) {
