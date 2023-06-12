@@ -46,7 +46,7 @@ final class URLSessionHTTPClientTests: XCTestCase {
         URLProtocolStub.startInterceptingRequests()
     }
     
-    override class func tearDown() {
+    override func tearDown() {
         super.tearDown()
         
         URLProtocolStub.stopInterceptingRequests()
@@ -67,9 +67,6 @@ final class URLSessionHTTPClientTests: XCTestCase {
         makeSUT().get(from: url) { _ in }
 
         wait(for: [exp], timeout: 1.0)
-        
-        // teatDown method didn't called for some reason
-        URLProtocolStub.stopInterceptingRequests()
     }
     
     func test_getFromURL_failsOnRequestError() {
