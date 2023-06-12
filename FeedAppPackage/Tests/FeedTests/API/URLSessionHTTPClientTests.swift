@@ -25,7 +25,7 @@ final class URLSessionHTTPClient {
                 
                 completion(.failure(error))
                 
-            } else if let data, data.count > 0, let response = response as? HTTPURLResponse {
+            } else if let data, let response = response as? HTTPURLResponse {
                 
                 completion(.success(data, response))
                 
@@ -82,7 +82,6 @@ final class URLSessionHTTPClientTests: XCTestCase {
                 
         XCTAssertNotNil(resultError(data: nil, response: nil, error: nil))
         XCTAssertNotNil(resultError(data: nil, response: nonHTTPURLResponse(), error: nil))
-        XCTAssertNotNil(resultError(data: nil, response: anyHTTPURLResponse(), error: nil))
         XCTAssertNotNil(resultError(data: anyData(), response: nil, error: nil))
         XCTAssertNotNil(resultError(data: anyData(), response: nil, error: anyNSError()))
         XCTAssertNotNil(resultError(data: nil, response: nonHTTPURLResponse(), error: anyNSError()))
@@ -105,6 +104,31 @@ final class URLSessionHTTPClientTests: XCTestCase {
             switch result {
             case let .success(recievedData, reseivedResponse):
                 XCTAssertEqual(recievedData, data)
+                XCTAssertEqual(reseivedResponse.url, response.url)
+                XCTAssertEqual(reseivedResponse.statusCode, response.statusCode)
+
+            default:
+                XCTFail("Expected success, got \(result) instead")
+            }
+
+            exp.fulfill()
+        }
+
+        wait(for: [exp], timeout: 1.0)
+    }
+    
+    func test_getFromURL_successWithEmptyDataOnHTTPURLResponseWithNilData() {
+
+        let response = anyHTTPURLResponse()
+        URLProtocolStub.stub(data: nil, response: response, error: nil)
+
+        let exp = expectation(description: "Wait for completion")
+        makeSUT().get(from: anyURL()) { result in
+
+            switch result {
+            case let .success(recievedData, reseivedResponse):
+                let emptyData = Data()
+                XCTAssertEqual(recievedData, emptyData)
                 XCTAssertEqual(reseivedResponse.url, response.url)
                 XCTAssertEqual(reseivedResponse.statusCode, response.statusCode)
 
