@@ -15,13 +15,19 @@ final class URLSessionHTTPClient {
     init(session: URLSession = .shared) {
         self.session = session
     }
+    struct UnexpectedResultError: Error {}
     
     func get(from url: URL, completion: @escaping (RemoteFeedLoader.Result) -> Void) {
         
         session.dataTask(with: url) { _, _, error in
             
             if let error {
+                
                 completion(.failure(error))
+                
+            } else {
+                
+                completion(.failure(UnexpectedResultError()))
             }
             
         }.resume()
@@ -75,6 +81,28 @@ final class URLSessionHTTPClientTests: XCTestCase {
                 
             default:
                 XCTFail("Expected error: \(error) got result: \(result)")
+            }
+            
+            exp.fulfill()
+        }
+        
+        wait(for: [exp], timeout: 1.0)
+    }
+    
+    func test_getFromURL_failsOnAllNil() {
+                
+        URLProtocolStub.stub(data: nil, response: nil, error: nil)
+        
+        let exp = expectation(description: "Waiting for callback")
+        
+        makeSUT().get(from: anyURL()) { result in
+            
+            switch result {
+            case .failure:
+                break
+                
+            default:
+                XCTFail("Expected failure got result: \(result)")
             }
             
             exp.fulfill()
