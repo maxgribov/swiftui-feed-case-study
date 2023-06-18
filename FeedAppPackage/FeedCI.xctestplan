@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "1968288D-0F4F-4125-94D9-C2BDD9C93FD2",
+      "id" : "0E20F4E3-0256-4457-B0D7-A13105BFB0A5",
       "name" : "Test Scheme Action",
       "options" : {
 
@@ -9,18 +9,16 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : {
-      "targets" : [
-        {
-          "containerPath" : "container:",
-          "identifier" : "Feed",
-          "name" : "Feed"
-        }
-      ]
-    },
-    "testExecutionOrdering" : "random"
+    "codeCoverage" : false
   },
   "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FeedTests",
+        "name" : "FeedTests"
+      }
+    },
     {
       "target" : {
         "containerPath" : "container:",
