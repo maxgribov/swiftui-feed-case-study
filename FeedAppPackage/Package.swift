@@ -19,5 +19,6 @@ let package = Package(
         .target(
             name: "Feed", dependencies: []),
         .testTarget(name: "FeedTests", dependencies: ["Feed"]),
+        .testTarget(name: "FeedAPIEndToEndTests", dependencies: ["Feed"]),
     ]
 )
