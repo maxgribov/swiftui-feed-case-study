@@ -141,15 +141,15 @@ final class CacheFeedUseCaseTests: XCTestCase {
         XCTAssertEqual(receivedError as NSError?, expectedError, file: file, line: line)
     }
     
-    private func uniqueFeedItem() -> FeedItem {
+    private func uniqueFeedItem() -> FeedImage {
         
-        FeedItem(id: UUID(), imageURL: anyURL())
+        FeedImage(id: UUID(), url: anyURL())
     }
     
-    private func uniqueFeedItems() -> (models: [FeedItem], local: [LocalFeedItem]) {
+    private func uniqueFeedItems() -> (models: [FeedImage], local: [LocalFeedImage]) {
         
         let items = [uniqueFeedItem(), uniqueFeedItem()]
-        let localItems = items.map { LocalFeedItem(id: $0.id, description: $0.description, location: $0.location, imageURL: $0.imageURL) }
+        let localItems = items.map { LocalFeedImage(id: $0.id, description: $0.description, location: $0.location, url: $0.url) }
         
         return (items, localItems)
     }
@@ -170,7 +170,7 @@ private final class FeedStoreSpy: FeedStore {
     enum ReceivedMessage: Equatable {
         
         case deleteCachedFeed
-        case insert([LocalFeedItem], Date)
+        case insert([LocalFeedImage], Date)
     }
     
     private(set) var receivedMessages = [ReceivedMessage]()
@@ -193,7 +193,7 @@ private final class FeedStoreSpy: FeedStore {
         deletionCompletions[index](nil)
     }
     
-    func insert(_ items: [LocalFeedItem], timestamp: Date, completion: @escaping InsetrionCompletion) {
+    func insert(_ items: [LocalFeedImage], timestamp: Date, completion: @escaping InsetrionCompletion) {
         
         insetrionsCompletions.append(completion)
         receivedMessages.append(.insert(items, timestamp))

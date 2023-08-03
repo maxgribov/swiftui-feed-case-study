@@ -58,13 +58,13 @@ private extension FeedAPIEndToEndTests {
         return receivedResult
     }
     
-    func expectedItem(at index: Int) -> FeedItem {
+    func expectedItem(at index: Int) -> FeedImage {
         
-        FeedItem(
+        FeedImage(
             id: id(at: index),
             description: description(at: index),
             location: location(at: index),
-            imageURL: url(at: index))
+            url: url(at: index))
     }
     
     func id(at index: Int) -> UUID {
