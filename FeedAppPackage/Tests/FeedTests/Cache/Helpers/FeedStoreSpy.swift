@@ -14,6 +14,7 @@ final class FeedStoreSpy: FeedStore {
         
         case deleteCachedFeed
         case insert([LocalFeedImage], Date)
+        case retrieve
     }
     
     private(set) var receivedMessages = [ReceivedMessage]()
@@ -50,5 +51,10 @@ final class FeedStoreSpy: FeedStore {
     func completeInsertionSuccessfuly(at index: Int = 0) {
         
         insetrionsCompletions[index](nil)
+    }
+    
+    func retrieve() {
+    
+        receivedMessages.append(.retrieve)
     }
 }
