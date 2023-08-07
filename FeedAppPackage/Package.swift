@@ -18,7 +18,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "Feed",
-            resources: [.process("Feed/FeedStore.xcdatamodeld")]),
+            resources: [.process("Cache/FeedStore.xcdatamodeld")]),
         .testTarget(name: "FeedTests", dependencies: ["Feed"]),
         .testTarget(name: "FeedAPIEndToEndTests", dependencies: ["Feed"]),
     ]
