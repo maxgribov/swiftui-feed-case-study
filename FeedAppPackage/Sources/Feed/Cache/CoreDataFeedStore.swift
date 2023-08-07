@@ -9,8 +9,11 @@ import CoreData
 
 public final class CoreDataFeedStore: FeedStore {
     
-    public init() {
-
+    private let container: NSPersistentContainer
+    
+    public init(bundle: Bundle = .main) throws {
+        
+        container = try NSPersistentContainer.load(modelName: "FeedStore", in: bundle)
     }
 
     public func retrieve(completion: @escaping FeedStore.RetrievalCompletion) {
@@ -24,6 +27,44 @@ public final class CoreDataFeedStore: FeedStore {
     
     public func deleteCachedFeed(completion: @escaping DeletionCompletion) {
         
+    }
+}
+
+private extension NSPersistentContainer {
+    
+    enum LoadingError: Error {
+        case modelNotFound
+        case failedLoadingPersistenStore(Error)
+    }
+    
+    static func load(modelName: String, in bundle: Bundle) throws -> NSPersistentContainer {
+        
+        guard let model = NSManagedObjectModel.with(name: modelName, bundle: bundle) else {
+            throw LoadingError.modelNotFound
+        }
+        
+        let container = NSPersistentContainer(name: modelName, managedObjectModel: model)
+        var loadStoresError: Error?
+        container.loadPersistentStores { loadStoresError = $1 }
+        try loadStoresError.map{ throw LoadingError.failedLoadingPersistenStore($0) }
+        
+        return container
+    }
+}
+
+private extension NSManagedObjectModel {
+    
+    static func with(name: String, bundle: Bundle) -> NSManagedObjectModel? {
+        
+        guard let url = bundle.url(forResource: name, withExtension: "momd") else {
+            return nil
+        }
+        
+        guard let model = NSManagedObjectModel(contentsOf: url) else {
+            return nil
+        }
+        
+        return model
     }
 }
 
