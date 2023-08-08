@@ -17,9 +17,7 @@ let package = Package(
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
-        .target(
-            name: "Feed",
-            resources: [.process("Cache/FeedStore.xcdatamodeld")]),
+        .target(name: "Feed"),
         .testTarget(name: "FeedTests", dependencies: ["Feed"]),
         .testTarget(name: "FeedAPIEndToEndTests", dependencies: ["Feed"]),
     ]
