@@ -25,6 +25,13 @@
         "identifier" : "FeedAPIEndToEndTests",
         "name" : "FeedAPIEndToEndTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FeedCacheIntegrationTests",
+        "name" : "FeedCacheIntegrationTests"
+      }
     }
   ],
   "version" : 1
