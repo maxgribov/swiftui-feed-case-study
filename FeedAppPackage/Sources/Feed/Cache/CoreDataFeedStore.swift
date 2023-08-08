@@ -20,7 +20,7 @@ public final class CoreDataFeedStore: FeedStore {
 
     public func retrieve(completion: @escaping FeedStore.RetrievalCompletion) {
         
-        context.perform { [context] in
+        perform { context in
             
             do {
                 
@@ -44,7 +44,7 @@ public final class CoreDataFeedStore: FeedStore {
     
     public func insert(_ items: [Feed.LocalFeedImage], timestamp: Date, completion: @escaping InsetrionCompletion) {
         
-        context.perform { [context] in
+        perform { context in
             
             do {
                 
@@ -64,7 +64,7 @@ public final class CoreDataFeedStore: FeedStore {
     
     public func deleteCachedFeed(completion: @escaping DeletionCompletion) {
         
-        context.perform { [context] in
+        perform { context in
             
             do {
                 
@@ -75,6 +75,13 @@ public final class CoreDataFeedStore: FeedStore {
                 
                 completion(error)
             }
+        }
+    }
+    
+    private func perform(_ action: @escaping (NSManagedObjectContext) -> Void) {
+        
+        context.perform { [context] in
+            action(context)
         }
     }
 }
