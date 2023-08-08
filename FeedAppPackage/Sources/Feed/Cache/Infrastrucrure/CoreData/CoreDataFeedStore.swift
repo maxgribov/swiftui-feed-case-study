@@ -86,47 +86,6 @@ public final class CoreDataFeedStore: FeedStore {
     }
 }
 
-private extension NSPersistentContainer {
-    
-    enum LoadingError: Error {
-        case modelNotFound
-        case failedLoadingPersistenStore(Error)
-    }
-    
-    static func load(modelName: String, url: URL, in bundle: Bundle) throws -> NSPersistentContainer {
-        
-        guard let model = NSManagedObjectModel.with(name: modelName, bundle: bundle) else {
-            throw LoadingError.modelNotFound
-        }
-        
-        let description = NSPersistentStoreDescription(url: url)
-        let container = NSPersistentContainer(name: modelName, managedObjectModel: model)
-        container.persistentStoreDescriptions = [description]
-        
-        var loadStoresError: Error?
-        container.loadPersistentStores { loadStoresError = $1 }
-        try loadStoresError.map{ throw LoadingError.failedLoadingPersistenStore($0) }
-        
-        return container
-    }
-}
-
-private extension NSManagedObjectModel {
-    
-    static func with(name: String, bundle: Bundle) -> NSManagedObjectModel? {
-        
-        guard let url = bundle.url(forResource: name, withExtension: "momd") else {
-            return nil
-        }
-        
-        guard let model = NSManagedObjectModel(contentsOf: url) else {
-            return nil
-        }
-        
-        return model
-    }
-}
-
 @objc(ManagedCache)
 private class ManagedCache: NSManagedObject {
     
