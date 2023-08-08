@@ -1,0 +1,33 @@
+{
+  "configurations" : [
+    {
+      "id" : "03DBEC55-84A5-44A2-AC33-ED0916695494",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "Feed",
+          "name" : "Feed"
+        }
+      ]
+    },
+    "testExecutionOrdering" : "random"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FeedCacheIntegrationTests",
+        "name" : "FeedCacheIntegrationTests"
+      }
+    }
+  ],
+  "version" : 1
+}
