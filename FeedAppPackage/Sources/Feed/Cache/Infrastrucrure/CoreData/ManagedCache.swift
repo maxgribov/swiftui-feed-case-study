@@ -20,6 +20,9 @@ internal class ManagedCache: NSManagedObject {
         
         return try context.fetch(request).first
     }
+}
+
+internal extension ManagedCache {
     
     var localFeed: [LocalFeedImage] {
         
