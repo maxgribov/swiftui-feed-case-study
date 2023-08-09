@@ -22,23 +22,13 @@ public final class CoreDataFeedStore: FeedStore {
         
         perform { context in
             
-            do {
+            completion(Result {
                 
-                if let cache = try ManagedCache.find(in: context) {
+                try ManagedCache.find(in: context).map {
                     
-                    completion(.success(CachedFeed(
-                        feed: cache.localFeed,
-                        timestamp: cache.timestamp)))
-                    
-                } else {
-                    
-                    completion(.success(.none))
+                    CachedFeed(feed: $0.localFeed, timestamp: $0.timestamp)
                 }
-
-            } catch {
-                
-                completion(.failure(error))
-            }            
+            })
         }
     }
     
@@ -46,19 +36,14 @@ public final class CoreDataFeedStore: FeedStore {
         
         perform { context in
             
-            do {
+            completion(Result {
                 
                 let cache = try ManagedCache.newUniqueInstance(in: context)
                 cache.timestamp = timestamp
                 cache.feed = ManagedCache.feed(from: items, in: context)
                 
                 try context.save()
-                completion(.success(()))
-                
-            } catch {
-                
-                completion(.failure(error))
-            }
+            })
         }
     }
     
@@ -66,15 +51,10 @@ public final class CoreDataFeedStore: FeedStore {
         
         perform { context in
             
-            do {
+            completion(Result {
                 
                 try ManagedCache.find(in: context).map(context.delete).map(context.save)
-                completion(.success(()))
-                
-            } catch {
-                
-                completion(.failure(error))
-            }
+            })
         }
     }
     
