@@ -26,13 +26,13 @@ public final class CoreDataFeedStore: FeedStore {
                 
                 if let cache = try ManagedCache.find(in: context) {
                     
-                    completion(.found(
+                    completion(.success(.found(
                         feed: cache.localFeed,
-                        timestamp: cache.timestamp))
+                        timestamp: cache.timestamp)))
                     
                 } else {
                     
-                    completion(.empty)
+                    completion(.success(.empty))
                 }
 
             } catch {
