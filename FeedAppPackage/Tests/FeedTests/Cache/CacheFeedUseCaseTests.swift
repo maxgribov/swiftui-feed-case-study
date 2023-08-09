@@ -129,9 +129,9 @@ final class CacheFeedUseCaseTests: XCTestCase {
         let exp = expectation(description: "wait for completion")
         
         var receivedError: Error?
-        sut.save([uniqueFeedItem()]) { error in
+        sut.save([uniqueFeedItem()]) { result in
             
-            receivedError = error
+            if case let .failure(error) = result { receivedError = error }
             exp.fulfill()
         }
         

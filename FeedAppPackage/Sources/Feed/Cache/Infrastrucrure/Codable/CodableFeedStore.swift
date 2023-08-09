@@ -78,11 +78,11 @@ public final class CodableFeedStore: FeedStore {
                 let cache = Cache(feed: items.map(CodableFeedImage.init), timestamp: timestamp)
                 let encoded = try encoder.encode(cache)
                 try encoded.write(to: storeURL)
-                completion(nil)
+                completion(.success(()))
                 
             } catch {
                 
-                completion(error)
+                completion(.failure(error))
             }
         }
     }
@@ -94,17 +94,17 @@ public final class CodableFeedStore: FeedStore {
             let fileManager = FileManager.default
             
             guard fileManager.fileExists(atPath: storeURL.path) else {
-                return completion(nil)
+                return completion(.success(()))
             }
             
             do {
                 
                 try fileManager.removeItem(at: storeURL)
-                completion(nil)
+                completion(.success(()))
                 
             } catch {
                 
-                completion(error)
+                completion(.failure(error))
             }
         }
     }
