@@ -17,7 +17,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     
     private struct UnexpectedResultError: Error {}
     
-    public func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
+    public func get(from url: URL, completion: @escaping (HTTPClient.Result) -> Void) {
         
         session.dataTask(with: url) { data, response, error in
             
@@ -27,7 +27,7 @@ public final class URLSessionHTTPClient: HTTPClient {
                 
             } else if let data, let response = response as? HTTPURLResponse {
                 
-                completion(.success(data, response))
+                completion(.success((data, response)))
                 
             } else {
                 
