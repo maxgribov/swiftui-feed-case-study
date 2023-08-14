@@ -1,0 +1,33 @@
+{
+  "configurations" : [
+    {
+      "id" : "9A00E861-8E01-450F-BFC2-145B21228CD9",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "FeedIOS",
+          "name" : "FeedIOS"
+        }
+      ]
+    },
+    "testExecutionOrdering" : "random"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FeedIOSTests",
+        "name" : "FeedIOSTests"
+      }
+    }
+  ],
+  "version" : 1
+}
