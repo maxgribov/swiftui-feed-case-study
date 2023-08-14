@@ -1,0 +1,45 @@
+{
+  "configurations" : [
+    {
+      "id" : "0E20F4E3-0256-4457-B0D7-A13105BFB0A5",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FeedTests",
+        "name" : "FeedTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FeedAPIEndToEndTests",
+        "name" : "FeedAPIEndToEndTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FeedCacheIntegrationTests",
+        "name" : "FeedCacheIntegrationTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FeedIOSTests",
+        "name" : "FeedIOSTests"
+      }
+    }
+  ],
+  "version" : 1
+}
