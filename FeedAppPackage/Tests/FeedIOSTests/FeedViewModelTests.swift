@@ -98,6 +98,16 @@ final class FeedViewModelTests: XCTestCase {
         XCTAssertEqual(sut.isRefreshing, true)
     }
     
+    func test_pullToRefresh_hidesLoadingIndicatorOnLoaderCompletion() {
+        
+        let (sut, loader) = makeSUT()
+        
+        sut.pullToRefresh()
+        loader.completeFeedLoading()
+        
+        XCTAssertEqual(sut.isRefreshing, false)
+    }
+    
     
     //MARK: - Helpers
     
