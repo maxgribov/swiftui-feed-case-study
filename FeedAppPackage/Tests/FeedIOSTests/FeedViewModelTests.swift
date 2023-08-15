@@ -27,6 +27,7 @@ final class FeedViewModel {
     
     func pullToRefresh() {
         
+        isRefreshing = true
         load()
     }
     
@@ -86,6 +87,15 @@ final class FeedViewModelTests: XCTestCase {
         loader.completeFeedLoading()
         
         XCTAssertEqual(sut.isRefreshing, false)
+    }
+    
+    func test_pullToRefresh_showsLoadingIndicator() {
+        
+        let (sut, _) = makeSUT()
+        
+        sut.pullToRefresh()
+        
+        XCTAssertEqual(sut.isRefreshing, true)
     }
     
     
