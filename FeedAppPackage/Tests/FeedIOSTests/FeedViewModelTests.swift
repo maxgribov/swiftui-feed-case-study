@@ -6,19 +6,20 @@
 //
 
 import XCTest
+import Feed
 
 final class FeedViewModel {
     
-    private let loader: FeedViewModelTests.LoaderSpy
+    private let loader: FeedLoader
     
-    init(loader: FeedViewModelTests.LoaderSpy) {
+    init(loader: FeedLoader) {
         
         self.loader = loader
     }
     
     func viewDidLoad() {
         
-        loader.load()
+        loader.load() { _ in }
     }
 }
 
@@ -45,11 +46,11 @@ final class FeedViewModelTests: XCTestCase {
     
     //MARK: - Helpers
     
-    class LoaderSpy {
+    class LoaderSpy: FeedLoader {
         
         private(set) var loadCallCount = 0
         
-        func load() {
+        func load(completion: @escaping (FeedLoader.Result) -> Void) {
             
             loadCallCount += 1
         }
