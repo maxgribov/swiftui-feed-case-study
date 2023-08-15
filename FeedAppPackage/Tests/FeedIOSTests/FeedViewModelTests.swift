@@ -19,6 +19,16 @@ final class FeedViewModel {
     
     func viewDidLoad() {
         
+        load()
+    }
+    
+    func pullToRefresh() {
+        
+        load()
+    }
+    
+    func load() {
+        
         loader.load() { _ in }
     }
 }
@@ -39,6 +49,18 @@ final class FeedViewModelTests: XCTestCase {
         sut.viewDidLoad()
         
         XCTAssertEqual(loader.loadCallCount, 1)
+    }
+    
+    func test_pullToRefresh_loadsFeed() {
+        
+        let (sut, loader) = makeSUT()
+        sut.viewDidLoad()
+        
+        sut.pullToRefresh()
+        XCTAssertEqual(loader.loadCallCount, 2)
+        
+        sut.pullToRefresh()
+        XCTAssertEqual(loader.loadCallCount, 3)
     }
     
     
