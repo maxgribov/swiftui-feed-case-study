@@ -10,6 +10,8 @@ import Feed
 
 final class FeedViewModel {
     
+    @Published var isRefreshing: Bool = false
+    
     private let loader: FeedLoader
     
     init(loader: FeedLoader) {
@@ -19,6 +21,7 @@ final class FeedViewModel {
     
     func viewDidLoad() {
         
+        isRefreshing = true
         load()
     }
     
@@ -61,6 +64,15 @@ final class FeedViewModelTests: XCTestCase {
         
         sut.pullToRefresh()
         XCTAssertEqual(loader.loadCallCount, 3)
+    }
+    
+    func test_viewDidLoad_showsLoadingIndicator() {
+        
+        let (sut, _) = makeSUT()
+        
+        sut.viewDidLoad()
+        
+        XCTAssertEqual(sut.isRefreshing, true)
     }
     
     
