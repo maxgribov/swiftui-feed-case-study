@@ -32,7 +32,10 @@ final class FeedViewModel {
     
     func load() {
         
-        loader.load() { _ in }
+        loader.load() { [weak self] _ in
+            
+            self?.isRefreshing = false
+        }
     }
 }
 
@@ -75,6 +78,16 @@ final class FeedViewModelTests: XCTestCase {
         XCTAssertEqual(sut.isRefreshing, true)
     }
     
+    func test_viewDidLoad_hidesLoadingIndicatorOnLoaderCompletion() {
+        
+        let (sut, loader) = makeSUT()
+        
+        sut.viewDidLoad()
+        loader.completeFeedLoading()
+        
+        XCTAssertEqual(sut.isRefreshing, false)
+    }
+    
     
     //MARK: - Helpers
     
@@ -90,11 +103,19 @@ final class FeedViewModelTests: XCTestCase {
     
     class LoaderSpy: FeedLoader {
         
-        private(set) var loadCallCount = 0
+        private var completions = [(FeedLoader.Result) -> Void]()
+        var loadCallCount: Int {
+            completions.count
+        }
         
         func load(completion: @escaping (FeedLoader.Result) -> Void) {
             
-            loadCallCount += 1
+            completions.append(completion)
+        }
+        
+        func completeFeedLoading() {
+            
+            completions[0](.success([]))
         }
     }
 }
