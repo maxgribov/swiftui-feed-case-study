@@ -35,8 +35,14 @@ public final class FeedViewModel {
         isRefreshing = true
         loader.load() { [weak self] result in
             
-            self?.models = (try? result.get().viewModels()) ?? []
-            self?.isRefreshing = false
+            switch result {
+            case let .success(feed):
+                self?.models = feed.viewModels()
+                self?.isRefreshing = false
+                
+            case .failure:
+                break
+            }
         }
     }
 }
