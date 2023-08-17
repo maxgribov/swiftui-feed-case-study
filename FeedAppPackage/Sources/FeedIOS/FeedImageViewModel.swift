@@ -12,5 +12,11 @@ public struct FeedImageViewModel {
     public let id: UUID
     public let description: String?
     public let location: String?
+    public let imageData: ImageData
     
+    public enum ImageData {
+        
+        case load(URL)
+        case loaded(Data)
+    }
 }
