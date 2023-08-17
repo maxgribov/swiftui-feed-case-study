@@ -7,37 +7,7 @@
 
 import XCTest
 import Feed
-
-final class FeedViewModel {
-    
-    @Published var isRefreshing: Bool = false
-    
-    private let loader: FeedLoader
-    
-    init(loader: FeedLoader) {
-        
-        self.loader = loader
-    }
-    
-    func viewDidLoad() {
-        
-        load()
-    }
-    
-    func pullToRefresh() {
-        
-        load()
-    }
-    
-    func load() {
-        
-        isRefreshing = true
-        loader.load() { [weak self] _ in
-            
-            self?.isRefreshing = false
-        }
-    }
-}
+import FeedIOS
 
 final class FeedViewModelTests: XCTestCase {
 
