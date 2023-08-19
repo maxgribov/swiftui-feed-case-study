@@ -54,10 +54,10 @@ public final class FeedViewModel {
             
             switch result {
             case let .success(data):
-                viewModel?.imageData = .loaded(data)
+                viewModel?.updateLoaded(imageData: data)
                 
             case .failure:
-                viewModel?.imageData = .fail
+                viewModel?.updateLoaded(imageData: nil)
             }
         }
     }

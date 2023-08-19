@@ -8,6 +8,7 @@
 import XCTest
 import Feed
 import FeedIOS
+import CoreImage
 
 final class FeedViewModelTests: XCTestCase {
     
@@ -133,7 +134,30 @@ final class FeedViewModelTests: XCTestCase {
         loader.completeImageLoadingWithError(at: 1)
         XCTAssertEqual(viewModel0.isShowingImageLoadingIndicator, false, "Expected no loading indicator state change for first view once second image loading completes with error")
         XCTAssertEqual(viewModel1.isShowingImageLoadingIndicator, false, "Expected loading indicator state change for second view once second image loading completes with error")
-
+    }
+    
+    func test_feedImageView_rendersImageLoadedFromURL() throws {
+        
+        let (sut, loader) = makeSUT()
+        
+        sut.viewDidLoad()
+        loader.completeFeedLoading(with: [makeImage(), makeImage()])
+        
+        let viewModel0 = try sut.simulateFeedImageViewVisible(at: 0)
+        let viewModel1 = try sut.simulateFeedImageViewVisible(at: 1)
+        
+        XCTAssertEqual(viewModel0.renderedImage, .none, "Expected no image for first view while loading first image")
+        XCTAssertEqual(viewModel1.renderedImage, .none, "Expected loading indicator for second view while loading second image")
+        
+        let imageData0 = makeImageDataPNG(variant: 0)
+        loader.completeImageLoading(with: imageData0, at: 0)
+        XCTAssertEqual(viewModel0.renderedImage, imageData0, "Expected image for first view once first image loading completes successfully")
+        XCTAssertEqual(viewModel1.renderedImage, .none, "Expected no image state change for second view once first image loading completes successfully")
+        
+        let imageData1 = makeImageDataPNG(variant: 1)
+        loader.completeImageLoading(with: imageData1, at: 1)
+        XCTAssertEqual(viewModel0.renderedImage, imageData0, "Expected no image state change for first view once second image loading completes successfully")
+        XCTAssertEqual(viewModel1.renderedImage, imageData1, "Expected image for second view once second image loading completes successfully")
     }
     
     //MARK: - Helpers
@@ -176,10 +200,14 @@ final class FeedViewModelTests: XCTestCase {
         FeedImage(id: UUID(), description: description, location: location, url: url)
     }
     
+    private func makeImageDataPNG(variant: UInt8) -> Data {
+        
+        // must be a real image data
+        Data(repeating: variant, count: 1)
+    }
+    
     class LoaderSpy: FeedLoader, FeedImageDataLoader {
 
-        
-        
         private var feedRequests = [(FeedLoader.Result) -> Void]()
         var loadFeedCallCount: Int { feedRequests.count }
         
@@ -314,5 +342,14 @@ private extension FeedImageViewModel {
     var descriptionText: String? {
         
         description
+    }
+    
+    var renderedImage: Data? {
+        
+        guard case let .loaded(imageData) = imageData else {
+            return nil
+        }
+        
+        return imageData
     }
 }

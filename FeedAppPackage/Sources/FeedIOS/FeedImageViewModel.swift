@@ -12,7 +12,7 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
     public let id: UUID
     public let description: String?
     public let location: String?
-    @Published public var imageData: ImageData
+    @Published public private(set) var imageData: ImageData
     
     public var isImageDataLoading: Bool {
         
@@ -35,5 +35,23 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
         case load(URL)
         case loaded(Data)
         case fail
+    }
+    
+    func updateLoaded(imageData: Data?) {
+        
+        if let imageData {
+            
+            self.imageData = validate(imageData: imageData) ? .loaded(imageData) : .fail
+            
+        } else {
+            
+            self.imageData = .fail
+        }
+    }
+    
+    private func validate(imageData: Data) -> Bool {
+        
+        // check if data can be converted to Image
+        return true
     }
 }
