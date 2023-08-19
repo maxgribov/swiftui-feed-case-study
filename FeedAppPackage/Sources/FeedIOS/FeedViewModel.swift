@@ -15,7 +15,8 @@ public protocol FeedImageDataLoaderTask {
 
 public protocol FeedImageDataLoader {
     
-    func loadImageData(from url: URL) -> FeedImageDataLoaderTask
+    typealias Result = Swift.Result<Data, Error>
+    func loadImageData(from url: URL, completion: @escaping (Result) -> Void) -> FeedImageDataLoaderTask
 }
 
 public final class FeedViewModel {
@@ -49,7 +50,16 @@ public final class FeedViewModel {
             return
         }
         
-        tasks[viewModel.id] = imageLoader.loadImageData(from: url)
+        tasks[viewModel.id] = imageLoader.loadImageData(from: url) {[weak viewModel] result in
+            
+            switch result {
+            case let .success(data):
+                viewModel?.imageData = .loaded(data)
+                
+            case .failure:
+                viewModel?.imageData = .fail
+            }
+        }
     }
     
     public func feedImageViewDidDisappear(for viewModel: FeedImageViewModel) {
