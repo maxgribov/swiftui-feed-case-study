@@ -11,6 +11,7 @@ import Feed
 public protocol FeedImageDataLoader {
     
     func loadImageData(from url: URL)
+    func cancelImageDataLoad(from url: URL)
 }
 
 public final class FeedViewModel {
@@ -45,6 +46,16 @@ public final class FeedViewModel {
         
         imageLoader.loadImageData(from: url)
     }
+    
+    public func feedImageViewDidDisappear(for viewModel: FeedImageViewModel) {
+        
+        guard case let .load(url) = viewModel.imageData else {
+            return
+        }
+        
+        imageLoader.cancelImageDataLoad(from: url)
+    }
+    
     
     private func load() {
         

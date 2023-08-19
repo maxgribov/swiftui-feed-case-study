@@ -95,6 +95,24 @@ final class FeedViewModelTests: XCTestCase {
         XCTAssertEqual(loader.loaderImageURLs, [image0.url, image1.url], "Expected second image URL request once second view becomes visible")
     }
     
+    func test_feedImageView_cancelsImageLoadingWhenNotVisibleAnymore() throws {
+        
+        let image0 = makeImage(url: URL(string: "http://url-0.com")!)
+        let image1 = makeImage(url: URL(string: "http://url-1.com")!)
+        let (sut, loader) = makeSUT()
+        
+        sut.viewDidLoad()
+        loader.completeFeedLoading(with: [image0, image1])
+        
+        XCTAssertEqual(loader.cancelledImageURLs, [], "Expected no cancelled image URL requests until image is not visible")
+        
+        try sut.simulateFeedImageViewNotVisible(at: 0)
+        XCTAssertEqual(loader.cancelledImageURLs, [image0.url], "Expected one cancelled image URL request once first image is not visible anymore")
+        
+        try sut.simulateFeedImageViewNotVisible(at: 1)
+        XCTAssertEqual(loader.cancelledImageURLs, [image0.url, image1.url], "Expected two cancelled image URL requests once second image is also not visible anymore")
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedViewModel, loader: LoaderSpy) {
@@ -160,10 +178,16 @@ final class FeedViewModelTests: XCTestCase {
         //MARK: - FeedImageDataLoader
         
         private(set) var loaderImageURLs: [URL] = []
+        private(set) var cancelledImageURLs: [URL] = []
         
         func loadImageData(from url: URL) {
             
             loaderImageURLs.append(url)
+        }
+        
+        func cancelImageDataLoad(from url: URL) {
+        
+            cancelledImageURLs.append(url)
         }
     }
 }
@@ -184,13 +208,23 @@ private extension FeedViewModel {
         pullToRefresh()
     }
     
-    func simulateFeedImageViewVisible(at index: Int) throws {
+    @discardableResult
+    func simulateFeedImageViewVisible(at index: Int) throws -> FeedImageViewModel {
         
         guard let feedImageViewModel = feedImageViewModel(at: index) else {
             throw Error.noFeedImageViewModelForIndex
         }
         
         feedImageViewDidAppear(for: feedImageViewModel)
+        
+        return feedImageViewModel
+    }
+    
+    func simulateFeedImageViewNotVisible(at index: Int) throws {
+        
+        let feedImageViewModel = try simulateFeedImageViewVisible(at: index)
+        
+        feedImageViewDidDisappear(for: feedImageViewModel)
     }
     
     func isShowingLoadingIndicator() -> Bool {
