@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FeedImageViewModel {
+public struct FeedImageViewModel: Identifiable {
     
     public let id: UUID
     public let description: String?

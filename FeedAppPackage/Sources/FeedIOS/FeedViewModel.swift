@@ -8,10 +8,14 @@
 import Foundation
 import Feed
 
+public protocol FeedImageDataLoaderTask {
+    
+    func cancel()
+}
+
 public protocol FeedImageDataLoader {
     
-    func loadImageData(from url: URL)
-    func cancelImageDataLoad(from url: URL)
+    func loadImageData(from url: URL) -> FeedImageDataLoaderTask
 }
 
 public final class FeedViewModel {
@@ -21,6 +25,7 @@ public final class FeedViewModel {
     
     private let feedLoader: FeedLoader
     private let imageLoader: FeedImageDataLoader
+    private var tasks = [FeedImageViewModel.ID: FeedImageDataLoaderTask]()
     
     public init(feedLoader: FeedLoader, imageLoader: FeedImageDataLoader) {
         
@@ -44,18 +49,14 @@ public final class FeedViewModel {
             return
         }
         
-        imageLoader.loadImageData(from: url)
+        tasks[viewModel.id] = imageLoader.loadImageData(from: url)
     }
     
     public func feedImageViewDidDisappear(for viewModel: FeedImageViewModel) {
-        
-        guard case let .load(url) = viewModel.imageData else {
-            return
-        }
-        
-        imageLoader.cancelImageDataLoad(from: url)
+
+        tasks[viewModel.id]?.cancel()
+        tasks[viewModel.id] = nil
     }
-    
     
     private func load() {
         
