@@ -160,6 +160,29 @@ final class FeedViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel1.renderedImage, imageData1, "Expected image for second view once second image loading completes successfully")
     }
     
+    func test_feedImageViewRetryButton_isVisibleOnImageURLLoadError() throws {
+        
+        let (sut, loader) = makeSUT()
+        
+        sut.viewDidLoad()
+        loader.completeFeedLoading(with: [makeImage(), makeImage()])
+        
+        let viewModel0 = try sut.simulateFeedImageViewVisible(at: 0)
+        let viewModel1 = try sut.simulateFeedImageViewVisible(at: 1)
+        
+        XCTAssertEqual(viewModel0.isShowingRetryAction, false, "Expected no retry action for first view while loading first image")
+        XCTAssertEqual(viewModel1.isShowingRetryAction, false, "Expected no retry action for second view while loading second image")
+        
+        let imageData0 = makeImageDataPNG(variant: 0)
+        loader.completeImageLoading(with: imageData0, at: 0)
+        XCTAssertEqual(viewModel0.isShowingRetryAction, false, "Expected no retry action for first view once first image loading completes successfully")
+        XCTAssertEqual(viewModel1.isShowingRetryAction, false, "Expected no retry action state change for second view once first image loading completes successfully")
+        
+        loader.completeImageLoadingWithError(at: 1)
+        XCTAssertEqual(viewModel0.isShowingRetryAction, false, "Expected no retry action state change for first view once second image loading completes with error")
+        XCTAssertEqual(viewModel1.isShowingRetryAction, true, "Expected retry action for second view once second image loading completes with error")
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedViewModel, loader: LoaderSpy) {
@@ -351,5 +374,15 @@ private extension FeedImageViewModel {
         }
         
         return imageData
+    }
+    
+    var isShowingRetryAction: Bool {
+        
+        guard case let .fail = imageData else {
+            return false
+        }
+        
+        return true
+        
     }
 }
