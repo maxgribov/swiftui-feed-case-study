@@ -51,13 +51,17 @@ public final class FeedViewModel {
     
     public func feedImageViewDidDisappear(for viewModel: FeedImageViewModel) {
 
-        tasks[viewModel.id]?.cancel()
-        tasks[viewModel.id] = nil
+        cancelImageDataLoading(for: viewModel.id)
     }
     
     public func preloadFeedImageData(for viewModel: FeedImageViewModel) {
         
         loadImageData(for: viewModel)
+    }
+    
+    public func cancelPreloadFeedImageData(for viewModel: FeedImageViewModel) {
+        
+        cancelImageDataLoading(for: viewModel.id)
     }
     
     private func load() {
@@ -101,6 +105,12 @@ public final class FeedViewModel {
         }
         
         loadImageData(for: imageViewModel)
+    }
+    
+    private func cancelImageDataLoading(for imageViewModelID: UUID) {
+        
+        tasks[imageViewModelID]?.cancel()
+        tasks[imageViewModelID] = nil
     }
     
     private func map(images: [FeedImage]) -> [FeedImageViewModel] {

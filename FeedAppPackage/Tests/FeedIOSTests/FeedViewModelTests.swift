@@ -239,6 +239,23 @@ final class FeedViewModelTests: XCTestCase {
         XCTAssertEqual(loader.loaderImageURLs, [image0.url, image1.url], "Expected second image URL request once second image is near visible")
     }
     
+    func test_feedImageView_cancelImageURLPreloadingWhenNotNearVisibleAnymore() throws {
+        
+        let image0 = makeImage(url: URL(string: "http://url-0.com")!)
+        let image1 = makeImage(url: URL(string: "http://url-1.com")!)
+        let (sut, loader) = makeSUT()
+        
+        sut.viewDidLoad()
+        loader.completeFeedLoading(with: [image0, image1])
+        XCTAssertEqual(loader.cancelledImageURLs, [], "Expected no cancelled image URL requests until image is not near visible")
+        
+        try sut.simulateFeedImageViewNotNearVisible(at: 0)
+        XCTAssertEqual(loader.cancelledImageURLs, [image0.url], "Expected first cancelled image URL request once first image is not near visible anymore")
+        
+        try sut.simulateFeedImageViewNotNearVisible(at: 1)
+        XCTAssertEqual(loader.cancelledImageURLs, [image0.url, image1.url], "Expected second cancelled image URL request once second image is not near visible anymore")
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedViewModel, loader: LoaderSpy) {
@@ -389,6 +406,17 @@ private extension FeedViewModel {
         }
         
         preloadFeedImageData(for: feedImageViewModel)
+    }
+    
+    func simulateFeedImageViewNotNearVisible(at index: Int) throws {
+        
+        try simulateFeedImageViewNearVisible(at: index)
+        
+        guard let feedImageViewModel = feedImageViewModel(at: index) else {
+            throw Error.noFeedImageViewModelForIndex
+        }
+        
+        cancelPreloadFeedImageData(for: feedImageViewModel)
     }
     
     func isShowingLoadingIndicator() -> Bool {
