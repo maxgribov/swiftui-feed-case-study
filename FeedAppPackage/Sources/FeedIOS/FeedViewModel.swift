@@ -19,29 +19,40 @@ public protocol FeedImageDataLoader {
     func loadImageData(from url: URL, completion: @escaping (Result) -> Void) -> FeedImageDataLoaderTask
 }
 
-public final class FeedViewModel {
+public final class FeedViewModel: ObservableObject {
     
     @Published public private(set) var isRefreshing: Bool = false
     @Published public private(set) var models: [FeedImageViewModel] = []
     
-    private let feedLoader: FeedLoader
     private let imageLoader: FeedImageDataLoader
+    private let refreshViewModel: FeedRefreshViewModel
     private var tasks = [FeedImageViewModel.ID: FeedImageDataLoaderTask]()
     
     public init(feedLoader: FeedLoader, imageLoader: FeedImageDataLoader) {
         
-        self.feedLoader = feedLoader
         self.imageLoader = imageLoader
+        self.refreshViewModel = FeedRefreshViewModel(isRefreshing: false, feedLoader: feedLoader)
+        
+        refreshViewModel.isRefreshing
+        //FIXME: enable it for production and implement tests with TestScheduler
+//            .receive(on: DispatchQueue.main)
+            .assign(to: &$isRefreshing)
     }
     
     public func viewDidLoad() {
         
-        load()
+        pullToRefresh()
     }
     
     public func pullToRefresh() {
         
-        load()
+        refreshViewModel.refresh()
+        refreshViewModel.onRefresh = { [weak self] images in
+            
+            guard let self else { return }
+            
+            self.models = self.map(images: images)
+        }
     }
     
     public func feedImageViewDidAppear(for viewModel: FeedImageViewModel) {
@@ -63,24 +74,11 @@ public final class FeedViewModel {
         
         cancelImageDataLoading(for: viewModel.id)
     }
+}
+
+private extension FeedViewModel {
     
-    private func load() {
-        
-        isRefreshing = true
-        feedLoader.load() { [weak self] result in
-            
-            guard let self else { return }
-            
-            if let feed = try? result.get() {
-                
-                self.models = self.map(images: feed)
-            }
-            
-            self.isRefreshing = false
-        }
-    }
-    
-    private func loadImageData(for imageViewModel: FeedImageViewModel) {
+    func loadImageData(for imageViewModel: FeedImageViewModel) {
         
         guard let url = imageViewModel.imageData.url else {
             return
@@ -98,7 +96,7 @@ public final class FeedViewModel {
         }
     }
     
-    private func loadImageData(for imageViewModelID: UUID) {
+    func loadImageData(for imageViewModelID: UUID) {
         
         guard let imageViewModel = models.first(where: { $0.id == imageViewModelID }) else {
             return
@@ -107,13 +105,13 @@ public final class FeedViewModel {
         loadImageData(for: imageViewModel)
     }
     
-    private func cancelImageDataLoading(for imageViewModelID: UUID) {
+    func cancelImageDataLoading(for imageViewModelID: UUID) {
         
         tasks[imageViewModelID]?.cancel()
         tasks[imageViewModelID] = nil
     }
     
-    private func map(images: [FeedImage]) -> [FeedImageViewModel] {
+    func map(images: [FeedImage]) -> [FeedImageViewModel] {
         
         images.map { image in
             
