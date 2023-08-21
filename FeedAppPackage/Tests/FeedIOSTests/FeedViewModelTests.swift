@@ -225,8 +225,9 @@ final class FeedViewModelTests: XCTestCase {
     
     private func makeImageDataPNG(variant: UInt8) -> Data {
         
-        // must be a real image data
-        Data(repeating: variant, count: 1)
+        let colorData = 0xFFFFFFFF & UInt32(variant)
+        
+        return CGImage.onePixelImage(withColor: colorData)!.pngData!
     }
     
     class LoaderSpy: FeedLoader, FeedImageDataLoader {
@@ -378,7 +379,7 @@ private extension FeedImageViewModel {
     
     var isShowingRetryAction: Bool {
         
-        guard case let .fail = imageData else {
+        guard case .fail = imageData else {
             return false
         }
         

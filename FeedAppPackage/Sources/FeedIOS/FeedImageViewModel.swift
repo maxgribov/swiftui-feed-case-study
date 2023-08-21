@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreGraphics
 
 public final class FeedImageViewModel: Identifiable, ObservableObject {
 
@@ -51,7 +52,6 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
     
     private func validate(imageData: Data) -> Bool {
         
-        // check if data can be converted to Image
-        return true
+        return CGImage.image(fromPng: imageData) != nil
     }
 }
