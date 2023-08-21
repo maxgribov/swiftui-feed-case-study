@@ -14,6 +14,7 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
     public let description: String?
     public let location: String?
     @Published public private(set) var imageData: ImageData
+    let onRetry: () -> Void
     
     public var isImageDataLoading: Bool {
         
@@ -24,29 +25,45 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
         return true
     }
     
-    public init(id: UUID, description: String?, location: String?, imageData: ImageData) {
+    public init(id: UUID, description: String?, location: String?, imageData: ImageData, onRetry: @escaping () -> Void) {
+        
         self.id = id
         self.description = description
         self.location = location
         self.imageData = imageData
+        self.onRetry = onRetry
     }
     
     public enum ImageData {
         
         case load(URL)
         case loaded(Data)
-        case fail
+        case fail(URL)
+        
+        var url: URL? {
+            
+            switch self {
+            case let .load(url): return url
+            case let .fail(url): return url
+            default: return nil
+            }
+        }
     }
     
-    func updateLoaded(imageData: Data?) {
+    public func retryButtonDidTapped() {
+        
+        onRetry()
+    }
+    
+    func updateLoaded(url: URL, imageData: Data?) {
         
         if let imageData {
             
-            self.imageData = validate(imageData: imageData) ? .loaded(imageData) : .fail
+            self.imageData = validate(imageData: imageData) ? .loaded(imageData) : .fail(url)
             
         } else {
             
-            self.imageData = .fail
+            self.imageData = .fail(url)
         }
     }
     

@@ -198,6 +198,30 @@ final class FeedViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel0.isShowingRetryAction, true, "Expected retry action once image loading completes with invalid image data")
     }
     
+    func test_feedImageViewRetryAction_retriesImageLoad() throws {
+        
+        let image0 = makeImage(url: URL(string: "http://url-0.com")!)
+        let image1 = makeImage(url: URL(string: "http://url-1.com")!)
+        let (sut, loader) = makeSUT()
+        
+        sut.viewDidLoad()
+        loader.completeFeedLoading(with: [image0, image1])
+        
+        let viewModel0 = try sut.simulateFeedImageViewVisible(at: 0)
+        let viewModel1 = try sut.simulateFeedImageViewVisible(at: 1)
+        XCTAssertEqual(loader.loaderImageURLs, [image0.url, image1.url], "Expected two image URL requests for the two visible views")
+        
+        loader.completeImageLoadingWithError(at: 0)
+        loader.completeImageLoadingWithError(at: 1)
+        XCTAssertEqual(loader.loaderImageURLs, [image0.url, image1.url], "Expected only two image URL requests before retry action")
+        
+        viewModel0.simulateRetryAction()
+        XCTAssertEqual(loader.loaderImageURLs, [image0.url, image1.url, image0.url], "Expected third imageURL request after first view retry action")
+        
+        viewModel1.simulateRetryAction()
+        XCTAssertEqual(loader.loaderImageURLs, [image0.url, image1.url, image0.url, image1.url], "Expected forth imageURL request after second view retry action")
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedViewModel, loader: LoaderSpy) {
@@ -399,6 +423,10 @@ private extension FeedImageViewModel {
         }
         
         return true
+    }
+    
+    func simulateRetryAction() {
         
+        retryButtonDidTapped()
     }
 }

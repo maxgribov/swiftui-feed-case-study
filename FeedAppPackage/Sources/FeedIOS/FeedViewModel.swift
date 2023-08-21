@@ -46,20 +46,7 @@ public final class FeedViewModel {
     
     public func feedImageViewDidAppear(for viewModel: FeedImageViewModel) {
         
-        guard case let .load(url) = viewModel.imageData else {
-            return
-        }
-        
-        tasks[viewModel.id] = imageLoader.loadImageData(from: url) {[weak viewModel] result in
-            
-            switch result {
-            case let .success(data):
-                viewModel?.updateLoaded(imageData: data)
-                
-            case .failure:
-                viewModel?.updateLoaded(imageData: nil)
-            }
-        }
+        loadImageData(for: viewModel)
     }
     
     public func feedImageViewDidDisappear(for viewModel: FeedImageViewModel) {
@@ -73,20 +60,57 @@ public final class FeedViewModel {
         isRefreshing = true
         feedLoader.load() { [weak self] result in
             
+            guard let self else { return }
+            
             if let feed = try? result.get() {
                 
-                self?.models = feed.viewModels()
+                self.models = self.map(images: feed)
             }
             
-            self?.isRefreshing = false
+            self.isRefreshing = false
+        }
+    }
+    
+    private func loadImageData(for imageViewModel: FeedImageViewModel) {
+        
+        guard let url = imageViewModel.imageData.url else {
+            return
+        }
+        
+        tasks[imageViewModel.id] = imageLoader.loadImageData(from: url) {[weak imageViewModel] result in
+            
+            switch result {
+            case let .success(data):
+                imageViewModel?.updateLoaded(url: url, imageData: data)
+                
+            case .failure:
+                imageViewModel?.updateLoaded(url: url, imageData: nil)
+            }
+        }
+    }
+    
+    private func loadImageData(for imageViewModelID: UUID) {
+        
+        guard let imageViewModel = models.first(where: { $0.id == imageViewModelID }) else {
+            return
+        }
+        
+        loadImageData(for: imageViewModel)
+    }
+    
+    private func map(images: [FeedImage]) -> [FeedImageViewModel] {
+        
+        images.map { image in
+            
+            FeedImageViewModel(
+                id: image.id,
+                description: image.description,
+                location: image.location,
+                imageData: .load(image.url),
+                onRetry: { [image, weak self] in self?.loadImageData(for: image.id) })
         }
     }
 }
 
-extension Array where Element == FeedImage {
-    
-    func viewModels() -> [FeedImageViewModel] {
-        
-        self.map { FeedImageViewModel(id: $0.id, description: $0.description, location: $0.location, imageData: .load($0.url)) }
-    }
-}
+
+
