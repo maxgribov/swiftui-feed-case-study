@@ -55,6 +55,11 @@ public final class FeedViewModel {
         tasks[viewModel.id] = nil
     }
     
+    public func preloadFeedImageData(for viewModel: FeedImageViewModel) {
+        
+        loadImageData(for: viewModel)
+    }
+    
     private func load() {
         
         isRefreshing = true
