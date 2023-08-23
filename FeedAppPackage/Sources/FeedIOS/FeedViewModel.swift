@@ -26,7 +26,6 @@ public final class FeedViewModel: ObservableObject {
     
     private let imageLoader: FeedImageDataLoader
     private let refreshViewModel: FeedRefreshViewModel
-    private var tasks = [FeedImageViewModel.ID: FeedImageDataLoaderTask]()
     
     public init(feedLoader: FeedLoader, imageLoader: FeedImageDataLoader) {
         
@@ -51,7 +50,7 @@ public final class FeedViewModel: ObservableObject {
             
             guard let self else { return }
             
-            self.models = self.map(images: images)
+            self.models = self.map(images: images, imageLoader: imageLoader)
         }
     }
     
@@ -80,20 +79,7 @@ private extension FeedViewModel {
     
     func loadImageData(for imageViewModel: FeedImageViewModel) {
         
-        guard let url = imageViewModel.imageData.url else {
-            return
-        }
-        
-        tasks[imageViewModel.id] = imageLoader.loadImageData(from: url) {[weak imageViewModel] result in
-            
-            switch result {
-            case let .success(data):
-                imageViewModel?.updateLoaded(url: url, imageData: data)
-                
-            case .failure:
-                imageViewModel?.updateLoaded(url: url, imageData: nil)
-            }
-        }
+        imageViewModel.loadImage()
     }
     
     func loadImageData(for imageViewModelID: UUID) {
@@ -107,19 +93,20 @@ private extension FeedViewModel {
     
     func cancelImageDataLoading(for imageViewModelID: UUID) {
         
-        tasks[imageViewModelID]?.cancel()
-        tasks[imageViewModelID] = nil
+        guard let imageViewModel = models.first(where: { $0.id == imageViewModelID }) else {
+            return
+        }
+        
+        imageViewModel.cancelImageLoad()
     }
     
-    func map(images: [FeedImage]) -> [FeedImageViewModel] {
+    func map(images: [FeedImage], imageLoader: FeedImageDataLoader) -> [FeedImageViewModel] {
         
         images.map { image in
             
             FeedImageViewModel(
-                id: image.id,
-                description: image.description,
-                location: image.location,
-                imageData: .load(image.url),
+                feedImage: image,
+                imageLoader: imageLoader,
                 onRetry: { [image, weak self] in self?.loadImageData(for: image.id) })
         }
     }

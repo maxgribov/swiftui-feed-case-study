@@ -7,14 +7,17 @@
 
 import Foundation
 import CoreGraphics
+import Feed
 
 public final class FeedImageViewModel: Identifiable, ObservableObject {
-
+    
     public let id: UUID
     public let description: String?
     public let location: String?
     @Published public private(set) var imageData: ImageData
-    let onRetry: () -> Void
+    private let onRetry: () -> Void
+    private var task: FeedImageDataLoaderTask?
+    private let imageLoader: FeedImageDataLoader
     
     public var isImageDataLoading: Bool {
         
@@ -25,29 +28,38 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
         return true
     }
     
-    public init(id: UUID, description: String?, location: String?, imageData: ImageData, onRetry: @escaping () -> Void) {
+    public init(feedImage: FeedImage, imageLoader: FeedImageDataLoader, onRetry: @escaping () -> Void) {
         
-        self.id = id
-        self.description = description
-        self.location = location
-        self.imageData = imageData
+        self.id = feedImage.id
+        self.description = feedImage.description
+        self.location = feedImage.location
+        self.imageData = .load(feedImage.url)
         self.onRetry = onRetry
+        self.imageLoader = imageLoader
     }
-    
-    public enum ImageData {
+
+    public func loadImage() {
         
-        case load(URL)
-        case loaded(Data)
-        case fail(URL)
+        guard let url = imageData.url else {
+            return
+        }
         
-        var url: URL? {
+        task = imageLoader.loadImageData(from: url) {[weak self] result in
             
-            switch self {
-            case let .load(url): return url
-            case let .fail(url): return url
-            default: return nil
+            switch result {
+            case let .success(data):
+                self?.updateLoaded(url: url, imageData: data)
+                
+            case .failure:
+                self?.updateLoaded(url: url, imageData: nil)
             }
         }
+    }
+    
+    public func cancelImageLoad() {
+        
+        task?.cancel()
+        task = nil
     }
     
     public func retryButtonDidTapped() {
@@ -70,5 +82,24 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
     private func validate(imageData: Data) -> Bool {
         
         return CGImage.image(fromPng: imageData) != nil
+    }
+}
+
+public extension FeedImageViewModel {
+    
+    enum ImageData {
+        
+        case load(URL)
+        case loaded(Data)
+        case fail(URL)
+        
+        var url: URL? {
+            
+            switch self {
+            case let .load(url): return url
+            case let .fail(url): return url
+            default: return nil
+            }
+        }
     }
 }
