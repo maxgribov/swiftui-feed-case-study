@@ -9,15 +9,15 @@ import Foundation
 import Combine
 import Feed
 
-final class FeedRefreshViewModel: ObservableObject {
+public final class FeedRefreshViewModel: ObservableObject {
     
-    private(set) var isRefreshing: CurrentValueSubject<Bool, Never>
+    @Published public private(set) var isRefreshing: Bool
     
     private let feedLoader: FeedLoader
     
     init(isRefreshing: Bool, feedLoader: FeedLoader) {
         
-        self.isRefreshing = .init(isRefreshing)
+        self.isRefreshing = isRefreshing
         self.feedLoader = feedLoader
     }
     
@@ -25,7 +25,7 @@ final class FeedRefreshViewModel: ObservableObject {
     
     func refresh() {
         
-        isRefreshing.send(true)
+        isRefreshing = true
         
         feedLoader.load() { [weak self] result in
             
@@ -36,7 +36,9 @@ final class FeedRefreshViewModel: ObservableObject {
                 self.onRefresh?(feed)
             }
             
-            self.isRefreshing.send(false)
+            //FIXME: do it on the main thread
+            // update tests for it too
+            self.isRefreshing = false
         }
     }
 }

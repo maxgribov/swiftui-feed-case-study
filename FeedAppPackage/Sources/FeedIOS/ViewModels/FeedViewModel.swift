@@ -21,19 +21,12 @@ public protocol FeedImageDataLoader {
 
 public final class FeedViewModel: ObservableObject {
     
-    @Published public private(set) var isRefreshing: Bool = false
+    public let refreshViewModel: FeedRefreshViewModel
     @Published public var models: [FeedImageViewModel] = []
-    
-    private let refreshViewModel: FeedRefreshViewModel
-    
+
     init(refreshViewModel: FeedRefreshViewModel) {
         
         self.refreshViewModel = refreshViewModel
-
-        refreshViewModel.isRefreshing
-        //FIXME: enable it for production and implement tests with TestScheduler
-//            .receive(on: DispatchQueue.main)
-            .assign(to: &$isRefreshing)
     }
     
     public func viewDidLoad() {
