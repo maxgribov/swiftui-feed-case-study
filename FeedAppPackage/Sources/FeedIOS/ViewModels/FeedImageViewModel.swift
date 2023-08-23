@@ -15,19 +15,11 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
     public let description: String?
     public let location: String?
     @Published public private(set) var imageData: ImageData
+    
     private let onRetry: () -> Void
-    private var task: FeedImageDataLoaderTask?
     private let imageLoader: FeedImageDataLoader
-    
-    public var isImageDataLoading: Bool {
-        
-        guard case .load(_) = imageData else {
-            return false
-        }
-        
-        return true
-    }
-    
+    private var task: FeedImageDataLoaderTask?
+
     public init(feedImage: FeedImage, imageLoader: FeedImageDataLoader, onRetry: @escaping () -> Void) {
         
         self.id = feedImage.id
@@ -66,23 +58,6 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
         
         onRetry()
     }
-    
-    func updateLoaded(url: URL, imageData: Data?) {
-        
-        if let imageData {
-            
-            self.imageData = validate(imageData: imageData) ? .loaded(imageData) : .fail(url)
-            
-        } else {
-            
-            self.imageData = .fail(url)
-        }
-    }
-    
-    private func validate(imageData: Data) -> Bool {
-        
-        return CGImage.image(fromPng: imageData) != nil
-    }
 }
 
 public extension FeedImageViewModel {
@@ -101,5 +76,34 @@ public extension FeedImageViewModel {
             default: return nil
             }
         }
+    }
+    
+    var isImageDataLoading: Bool {
+        
+        guard case .load(_) = imageData else {
+            return false
+        }
+        
+        return true
+    }
+}
+
+private extension FeedImageViewModel {
+    
+    func updateLoaded(url: URL, imageData: Data?) {
+        
+        if let imageData {
+            
+            self.imageData = validate(imageData: imageData) ? .loaded(imageData) : .fail(url)
+            
+        } else {
+            
+            self.imageData = .fail(url)
+        }
+    }
+    
+    func validate(imageData: Data) -> Bool {
+        
+        return CGImage.image(fromPng: imageData) != nil
     }
 }

@@ -65,6 +65,11 @@ public final class FeedViewModel: ObservableObject {
         
         cancelImageDataLoading(for: viewModel.id)
     }
+}
+
+//MARK: - Internal Helpers
+
+extension FeedViewModel {
     
     func loadImageData(for imageViewModelID: UUID) {
         
@@ -75,6 +80,8 @@ public final class FeedViewModel: ObservableObject {
         loadImageData(for: imageViewModel)
     }
 }
+
+//MARK: - Private Helpers
 
 private extension FeedViewModel {
     
@@ -92,6 +99,3 @@ private extension FeedViewModel {
         imageViewModel.cancelImageLoad()
     }
 }
-
-
-
