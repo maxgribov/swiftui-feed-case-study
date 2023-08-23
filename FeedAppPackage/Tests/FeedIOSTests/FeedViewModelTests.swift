@@ -421,7 +421,7 @@ private extension FeedViewModel {
     
     func isShowingLoadingIndicator() -> Bool {
         
-        refreshViewModel.isRefreshing
+        isRefreshing
     }
     
     func numberOfRenderedFeedImageViews() -> Int {

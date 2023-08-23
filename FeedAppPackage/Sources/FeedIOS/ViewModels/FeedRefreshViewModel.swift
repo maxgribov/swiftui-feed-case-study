@@ -9,23 +9,23 @@ import Foundation
 import Combine
 import Feed
 
-public final class FeedRefreshViewModel: ObservableObject {
+final class FeedRefreshViewModel: ObservableObject {
     
-    @Published public private(set) var isRefreshing: Bool
+    typealias Observer<T> = (T) -> Void
     
     private let feedLoader: FeedLoader
     
-    init(isRefreshing: Bool, feedLoader: FeedLoader) {
+    init(feedLoader: FeedLoader) {
         
-        self.isRefreshing = isRefreshing
         self.feedLoader = feedLoader
     }
     
-    var onRefresh: (([FeedImage]) -> Void)?
+    var onLoadingStateChange: Observer<Bool>?
+    var onFeedLoad: Observer<[FeedImage]>?
     
-    func refresh() {
+    func loadFeed() {
         
-        isRefreshing = true
+        onLoadingStateChange?(true)
         
         feedLoader.load() { [weak self] result in
             
@@ -33,12 +33,10 @@ public final class FeedRefreshViewModel: ObservableObject {
             
             if let feed = try? result.get() {
                 
-                self.onRefresh?(feed)
+                self.onFeedLoad?(feed)
             }
             
-            //FIXME: do it on the main thread
-            // update tests for it too
-            self.isRefreshing = false
+            self.onLoadingStateChange?(false)
         }
     }
 }

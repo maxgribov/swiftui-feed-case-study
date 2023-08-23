@@ -10,12 +10,20 @@ import Feed
 
 public final class FeedViewModel: ObservableObject {
     
-    public let refreshViewModel: FeedRefreshViewModel
+    @Published public private(set) var isRefreshing = false
     @Published public var models: [FeedImageViewModel] = []
+    
+    private let refreshViewModel: FeedRefreshViewModel
 
     init(refreshViewModel: FeedRefreshViewModel) {
         
         self.refreshViewModel = refreshViewModel
+        refreshViewModel.onLoadingStateChange = { [weak self] isLoading in
+            
+            //FIXME: do it on the main thread
+            // update tests for it first
+            self?.isRefreshing = isLoading
+        }
     }
     
     public func viewDidLoad() {
@@ -25,7 +33,7 @@ public final class FeedViewModel: ObservableObject {
     
     public func pullToRefresh() {
         
-        refreshViewModel.refresh()
+        refreshViewModel.loadFeed()
     }
     
     public func feedImageViewDidAppear(for viewModel: FeedImageViewModel) {
