@@ -16,14 +16,19 @@ public final class FeedUIComposer {
         
         let refreshViewModel = FeedRefreshViewModel(isRefreshing: false, feedLoader: feedLoader)
         let feedViewModel = FeedViewModel(refreshViewModel: refreshViewModel)
-        refreshViewModel.onRefresh = { [weak feedViewModel] images in
+        refreshViewModel.onRefresh = adaptFeedToViewModels(forwardingTo: feedViewModel, imageLoader: imageLoader)
+        
+        return feedViewModel
+    }
+    
+    private static func adaptFeedToViewModels(forwardingTo feedViewModel: FeedViewModel, imageLoader: FeedImageDataLoader) -> ([FeedImage]) ->Void {
+        
+        return { [weak feedViewModel] images in
             
             guard let feedViewModel else { return }
             
-            feedViewModel.models = self.map(images: images, imageLoader: imageLoader, feedViewModel: feedViewModel)
+            feedViewModel.models = map(images: images, imageLoader: imageLoader, feedViewModel: feedViewModel)
         }
-        
-        return feedViewModel
     }
     
     static func map(images: [FeedImage], imageLoader: FeedImageDataLoader, feedViewModel: FeedViewModel) -> [FeedImageViewModel] {
