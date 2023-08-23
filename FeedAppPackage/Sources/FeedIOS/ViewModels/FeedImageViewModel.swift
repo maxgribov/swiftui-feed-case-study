@@ -6,21 +6,21 @@
 //
 
 import Foundation
-import CoreGraphics
 import Feed
 
-public final class FeedImageViewModel: Identifiable, ObservableObject {
+public final class FeedImageViewModel<Image>: Identifiable, ObservableObject {
     
     public let id: UUID
     public let description: String?
     public let location: String?
-    @Published public private(set) var imageData: ImageData
+    @Published public private(set) var imageData: ImageData<Image>
     
     private let onRetry: () -> Void
     private let imageLoader: FeedImageDataLoader
+    private let imageTransformer: (Data) -> Image?
     private var task: FeedImageDataLoaderTask?
 
-    public init(feedImage: FeedImage, imageLoader: FeedImageDataLoader, onRetry: @escaping () -> Void) {
+    public init(feedImage: FeedImage, imageLoader: FeedImageDataLoader, imageTransformer: @escaping (Data) -> Image?, onRetry: @escaping () -> Void) {
         
         self.id = feedImage.id
         self.description = feedImage.description
@@ -28,6 +28,7 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
         self.imageData = .load(feedImage.url)
         self.onRetry = onRetry
         self.imageLoader = imageLoader
+        self.imageTransformer = imageTransformer
     }
 
     public func loadImage() {
@@ -62,10 +63,10 @@ public final class FeedImageViewModel: Identifiable, ObservableObject {
 
 public extension FeedImageViewModel {
     
-    enum ImageData {
+    enum ImageData<Image> {
         
         case load(URL)
-        case loaded(Data)
+        case loaded(Image)
         case fail(URL)
         
         var url: URL? {
@@ -94,16 +95,17 @@ private extension FeedImageViewModel {
         
         if let imageData {
             
-            self.imageData = validate(imageData: imageData) ? .loaded(imageData) : .fail(url)
+            switch imageTransformer(imageData) {
+            case let .some(image):
+                self.imageData = .loaded(image)
+                
+            case .none:
+                self.imageData = .fail(url)
+            }
             
         } else {
             
             self.imageData = .fail(url)
         }
-    }
-    
-    func validate(imageData: Data) -> Bool {
-        
-        return CGImage.image(fromPng: imageData) != nil
     }
 }

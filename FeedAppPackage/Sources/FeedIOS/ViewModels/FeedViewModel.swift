@@ -8,10 +8,10 @@
 import Foundation
 import Feed
 
-public final class FeedViewModel: ObservableObject {
+public final class FeedViewModel<Image>: ObservableObject {
     
     @Published public private(set) var isRefreshing = false
-    @Published public var models: [FeedImageViewModel] = []
+    @Published public var models: [FeedImageViewModel<Image>] = []
     
     private let refreshViewModel: FeedRefreshViewModel
 
@@ -36,24 +36,24 @@ public final class FeedViewModel: ObservableObject {
         refreshViewModel.loadFeed()
     }
     
-    public func feedImageViewDidAppear(for viewModel: FeedImageViewModel) {
+    public func feedImageViewDidAppear(for imageViewModelID: UUID) {
         
-        loadImageData(for: viewModel)
+        loadImageData(for: imageViewModelID)
     }
     
-    public func feedImageViewDidDisappear(for viewModel: FeedImageViewModel) {
+    public func feedImageViewDidDisappear(for imageViewModelID: UUID) {
 
-        cancelImageDataLoading(for: viewModel.id)
+        cancelImageDataLoading(for: imageViewModelID)
     }
     
-    public func preloadFeedImageData(for viewModel: FeedImageViewModel) {
+    public func preloadFeedImageData(for imageViewModelID: UUID) {
         
-        loadImageData(for: viewModel)
+        loadImageData(for: imageViewModelID)
     }
     
-    public func cancelPreloadFeedImageData(for viewModel: FeedImageViewModel) {
+    public func cancelPreloadFeedImageData(for imageViewModelID: UUID) {
         
-        cancelImageDataLoading(for: viewModel.id)
+        cancelImageDataLoading(for: imageViewModelID)
     }
 }
 
@@ -67,19 +67,14 @@ extension FeedViewModel {
             return
         }
         
-        loadImageData(for: imageViewModel)
+        imageViewModel.loadImage()
     }
 }
 
 //MARK: - Private Helpers
 
 private extension FeedViewModel {
-    
-    func loadImageData(for imageViewModel: FeedImageViewModel) {
-        
-        imageViewModel.loadImage()
-    }
-        
+
     func cancelImageDataLoading(for imageViewModelID: UUID) {
         
         guard let imageViewModel = models.first(where: { $0.id == imageViewModelID }) else {

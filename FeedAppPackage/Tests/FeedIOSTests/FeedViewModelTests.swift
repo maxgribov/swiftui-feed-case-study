@@ -258,7 +258,7 @@ final class FeedViewModelTests: XCTestCase {
     
     //MARK: - Helpers
     
-    private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedViewModel, loader: LoaderSpy) {
+    private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedViewModel<CGImage>, loader: LoaderSpy) {
         
         let loader = LoaderSpy()
         let sut = FeedUIComposer.feedComposedWith(feedLoader: loader, imageLoader: loader)
@@ -268,7 +268,7 @@ final class FeedViewModelTests: XCTestCase {
         return (sut, loader)
     }
     
-    private func assertThat(_ sut: FeedViewModel, isRendering feed: [FeedImage], file: StaticString = #filePath, line: UInt = #line) {
+    private func assertThat(_ sut: FeedViewModel<CGImage>, isRendering feed: [FeedImage], file: StaticString = #filePath, line: UInt = #line) {
         
         guard sut.numberOfRenderedFeedImageViews() == feed.count else {
             return XCTFail("Expected \(feed.count) images, got \(sut.numberOfRenderedFeedImageViews()) instead", file: file, line: line)
@@ -280,7 +280,7 @@ final class FeedViewModelTests: XCTestCase {
         }
     }
     
-    private func assertThat(_ sut: FeedViewModel, hasViewConfiguredFor image: FeedImage, at index: Int, file: StaticString = #filePath, line: UInt = #line) {
+    private func assertThat(_ sut: FeedViewModel<CGImage>, hasViewConfiguredFor image: FeedImage, at index: Int, file: StaticString = #filePath, line: UInt = #line) {
         
         guard let viewModel = sut.feedImageViewModel(at: index) else {
             return XCTFail("Expected FeedViewModel, got nil instead", file: file, line: line)
@@ -369,7 +369,7 @@ private func anyError() -> Error {
     NSError(domain: "", code: 0)
 }
 
-private extension FeedViewModel {
+private extension FeedViewModel<CGImage> {
     
     enum Error: Swift.Error {
         case noFeedImageViewModelForIndex
@@ -381,13 +381,13 @@ private extension FeedViewModel {
     }
     
     @discardableResult
-    func simulateFeedImageViewVisible(at index: Int) throws -> FeedImageViewModel {
+    func simulateFeedImageViewVisible(at index: Int) throws -> FeedImageViewModel<CGImage> {
         
         guard let feedImageViewModel = feedImageViewModel(at: index) else {
             throw Error.noFeedImageViewModelForIndex
         }
         
-        feedImageViewDidAppear(for: feedImageViewModel)
+        feedImageViewDidAppear(for: feedImageViewModel.id)
         
         return feedImageViewModel
     }
@@ -396,7 +396,7 @@ private extension FeedViewModel {
         
         let feedImageViewModel = try simulateFeedImageViewVisible(at: index)
         
-        feedImageViewDidDisappear(for: feedImageViewModel)
+        feedImageViewDidDisappear(for: feedImageViewModel.id)
     }
     
     func simulateFeedImageViewNearVisible(at index: Int) throws {
@@ -405,7 +405,7 @@ private extension FeedViewModel {
             throw Error.noFeedImageViewModelForIndex
         }
         
-        preloadFeedImageData(for: feedImageViewModel)
+        preloadFeedImageData(for: feedImageViewModel.id)
     }
     
     func simulateFeedImageViewNotNearVisible(at index: Int) throws {
@@ -416,7 +416,7 @@ private extension FeedViewModel {
             throw Error.noFeedImageViewModelForIndex
         }
         
-        cancelPreloadFeedImageData(for: feedImageViewModel)
+        cancelPreloadFeedImageData(for: feedImageViewModel.id)
     }
     
     func isShowingLoadingIndicator() -> Bool {
@@ -429,7 +429,7 @@ private extension FeedViewModel {
         models.count
     }
     
-    func feedImageViewModel(at index: Int) -> FeedImageViewModel? {
+    func feedImageViewModel(at index: Int) -> FeedImageViewModel<CGImage>? {
         
         guard index >= 0, index < models.count else {
             return nil
@@ -439,7 +439,7 @@ private extension FeedViewModel {
     }
 }
 
-private extension FeedImageViewModel {
+private extension FeedImageViewModel<CGImage> {
     
     var isShowingLocation: Bool {
         
@@ -467,7 +467,7 @@ private extension FeedImageViewModel {
             return nil
         }
         
-        return imageData
+        return imageData.pngData
     }
     
     var isShowingRetryAction: Bool {
