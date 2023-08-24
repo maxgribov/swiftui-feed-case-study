@@ -9,31 +9,27 @@ import Foundation
 import Feed
 
 public final class FeedViewModel<Image>: ObservableObject {
-    
+        
     @Published public private(set) var isRefreshing = false
     @Published public var models: [FeedImageViewModel<Image>] = []
     
-    private let refreshViewModel: FeedRefreshViewModel
+    var mapImages: (([FeedImage]) -> [FeedImageViewModel<Image>])?
+    
+    private let feedLoader: FeedLoader
 
-    init(refreshViewModel: FeedRefreshViewModel) {
+    init(feedLoader: FeedLoader) {
         
-        self.refreshViewModel = refreshViewModel
-        refreshViewModel.onLoadingStateChange = { [weak self] isLoading in
-            
-            //FIXME: do it on the main thread
-            // update tests for it first
-            self?.isRefreshing = isLoading
-        }
+        self.feedLoader = feedLoader
     }
     
     public func viewDidLoad() {
         
-        pullToRefresh()
+        loadFeed()
     }
     
     public func pullToRefresh() {
         
-        refreshViewModel.loadFeed()
+        loadFeed()
     }
     
     public func feedImageViewDidAppear(for imageViewModelID: UUID) {
@@ -60,6 +56,26 @@ public final class FeedViewModel<Image>: ObservableObject {
 //MARK: - Internal Helpers
 
 extension FeedViewModel {
+    
+    func loadFeed() {
+        
+        isRefreshing = true
+        
+        feedLoader.load() { [weak self] result in
+            
+            guard let self else { return }
+            
+            if let feed = try? result.get(),
+               let models = self.mapImages?(feed) {
+                
+                self.models = models
+            }
+            
+            //FIXME: do it on the main thread
+            // update tests for it first
+            self.isRefreshing = false
+        }
+    }
     
     func loadImageData(for imageViewModelID: UUID) {
         

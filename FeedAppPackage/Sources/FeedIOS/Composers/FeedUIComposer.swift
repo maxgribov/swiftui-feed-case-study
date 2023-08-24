@@ -18,10 +18,8 @@ public final class FeedUIComposer<Image> {
         imageTransformer: @escaping (Data) -> Image?
     ) -> FeedViewModel<Image> {
         
-        let refreshViewModel = FeedRefreshViewModel(feedLoader: feedLoader)
-        let feedViewModel = FeedViewModel<Image>(refreshViewModel: refreshViewModel)
-        refreshViewModel.onFeedLoad = adaptFeedToViewModels(
-            forwardingTo: feedViewModel,
+        let feedViewModel = FeedViewModel<Image>(feedLoader: feedLoader)
+        feedViewModel.mapImages = feedImagesMapper(
             imageLoader: imageLoader,
             imageTransformer: imageTransformer,
             onRetry: { [weak feedViewModel] feedImage in
@@ -32,40 +30,22 @@ public final class FeedUIComposer<Image> {
         return feedViewModel
     }
     
-    private static func adaptFeedToViewModels(
-        forwardingTo feedViewModel: FeedViewModel<Image>,
+    private static func feedImagesMapper(
         imageLoader: FeedImageDataLoader,
         imageTransformer: @escaping (Data) -> Image?,
         onRetry: @escaping (FeedImage) -> () -> Void
-    ) -> ([FeedImage]) ->Void {
+    ) -> ([FeedImage]) -> [FeedImageViewModel<Image>] {
         
-        return { [weak feedViewModel] images in
-            
-            guard let feedViewModel else { return }
-            
-            feedViewModel.models = map(
-                images:
-                    images,
-                imageLoader: imageLoader,
-                imageTransformer: imageTransformer,
-                onRetry: onRetry)
-        }
-    }
-    
-    static func map(
-        images: [FeedImage],
-        imageLoader: FeedImageDataLoader,
-        imageTransformer: @escaping (Data) -> Image?,
-        onRetry: @escaping (FeedImage) -> () -> Void
-    ) -> [FeedImageViewModel<Image>] {
-        
-        images.map { image in
-            
-            FeedImageViewModel(
-                feedImage: image,
-                imageLoader: imageLoader,
-                imageTransformer: imageTransformer,
-                onRetry: onRetry(image))
+        return { images in
+
+            return images.map { image in
+                
+                FeedImageViewModel(
+                    feedImage: image,
+                    imageLoader: imageLoader,
+                    imageTransformer: imageTransformer,
+                    onRetry: onRetry(image))
+            }
         }
     }
 }
