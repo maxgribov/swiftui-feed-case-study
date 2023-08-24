@@ -12,26 +12,52 @@ public final class FeedUIComposer<Image> {
     
     private init() {}
     
-    public static func feedComposedWith(feedLoader: FeedLoader, imageLoader: FeedImageDataLoader, imageTransformer: @escaping (Data) -> Image?) -> FeedViewModel<Image> {
+    public static func feedComposedWith(
+        feedLoader: FeedLoader,
+        imageLoader: FeedImageDataLoader,
+        imageTransformer: @escaping (Data) -> Image?
+    ) -> FeedViewModel<Image> {
         
         let refreshViewModel = FeedRefreshViewModel(feedLoader: feedLoader)
         let feedViewModel = FeedViewModel<Image>(refreshViewModel: refreshViewModel)
-        refreshViewModel.onFeedLoad = adaptFeedToViewModels(forwardingTo: feedViewModel, imageLoader: imageLoader, imageTransformer: imageTransformer)
+        refreshViewModel.onFeedLoad = adaptFeedToViewModels(
+            forwardingTo: feedViewModel,
+            imageLoader: imageLoader,
+            imageTransformer: imageTransformer,
+            onRetry: { [weak feedViewModel] feedImage in
+                
+                return { [weak feedViewModel] in feedViewModel?.loadImageData(for: feedImage.id) }
+            })
         
         return feedViewModel
     }
     
-    private static func adaptFeedToViewModels(forwardingTo feedViewModel: FeedViewModel<Image>, imageLoader: FeedImageDataLoader, imageTransformer: @escaping (Data) -> Image?) -> ([FeedImage]) ->Void {
+    private static func adaptFeedToViewModels(
+        forwardingTo feedViewModel: FeedViewModel<Image>,
+        imageLoader: FeedImageDataLoader,
+        imageTransformer: @escaping (Data) -> Image?,
+        onRetry: @escaping (FeedImage) -> () -> Void
+    ) -> ([FeedImage]) ->Void {
         
         return { [weak feedViewModel] images in
             
             guard let feedViewModel else { return }
             
-            feedViewModel.models = map(images: images, imageLoader: imageLoader, feedViewModel: feedViewModel, imageTransformer: imageTransformer)
+            feedViewModel.models = map(
+                images:
+                    images,
+                imageLoader: imageLoader,
+                imageTransformer: imageTransformer,
+                onRetry: onRetry)
         }
     }
     
-    static func map(images: [FeedImage], imageLoader: FeedImageDataLoader, feedViewModel: FeedViewModel<Image>, imageTransformer: @escaping (Data) -> Image?) -> [FeedImageViewModel<Image>] {
+    static func map(
+        images: [FeedImage],
+        imageLoader: FeedImageDataLoader,
+        imageTransformer: @escaping (Data) -> Image?,
+        onRetry: @escaping (FeedImage) -> () -> Void
+    ) -> [FeedImageViewModel<Image>] {
         
         images.map { image in
             
@@ -39,7 +65,7 @@ public final class FeedUIComposer<Image> {
                 feedImage: image,
                 imageLoader: imageLoader,
                 imageTransformer: imageTransformer,
-                onRetry: { [image, weak feedViewModel] in feedViewModel?.loadImageData(for: image.id) })
+                onRetry: onRetry(image))
         }
     }
 }
