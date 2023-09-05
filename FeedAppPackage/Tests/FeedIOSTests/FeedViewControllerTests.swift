@@ -132,6 +132,29 @@ final class FeedViewControllerTests: XCTestCase {
         XCTAssertEqual(view1?.isShowingImageLoadingIndicator, false)
     }
     
+    func test_feedImageView_rendersImageLoadedFromURL() {
+        
+        let (sut, loader) = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        loader.completeFeedLoading(with: [makeImage(), makeImage()])
+        
+        let view0 = sut.simulateFeedImageViewVisible(at: 0)
+        let view1 = sut.simulateFeedImageViewVisible(at: 1)
+        XCTAssertEqual(view0?.renderingImage, .none)
+        XCTAssertEqual(view1?.renderingImage, .none)
+        
+        let imageData0 = UIImage.make(with: .blue).pngData()!
+        loader.completeImageLoading(with: imageData0, at: 0)
+        XCTAssertEqual(view0?.renderingImage, imageData0)
+        XCTAssertEqual(view1?.renderingImage, .none)
+        
+        let imageData1 = UIImage.make(with: .red).pngData()!
+        loader.completeImageLoading(with: imageData1, at: 1)
+        XCTAssertEqual(view0?.renderingImage, imageData0)
+        XCTAssertEqual(view1?.renderingImage, imageData1)
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedViewController, loader: LoaderSpy) {
@@ -318,5 +341,26 @@ private extension FeedImageCell {
     var descriptionText: String? {
         
         descriptionLabel.text
+    }
+    
+    var renderingImage: Data? {
+        
+        feedImageView.image?.pngData()
+    }
+}
+
+private extension UIImage {
+    
+    static func make(with color: UIColor) -> UIImage {
+        
+        let rect = CGRect(origin: .zero, size: .init(width: 1, height: 1))
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: rect.size, format: format)
+        return renderer.image { ctx in
+            
+            ctx.cgContext.setFillColor(color.cgColor)
+            ctx.cgContext.fill(rect)
+        }
     }
 }
