@@ -1,38 +1,38 @@
 import Cocoa
 
-func adapt<A, B>(_ source: @escaping ((A) -> Void) -> Void, map: @escaping (A) -> B) -> ((B) -> Void) -> Void {
+struct Parallel<A> {
     
-    return { b in
+    let run: (@escaping (A) -> Void) -> Void
+}
+
+func transform<A, B>(_ source: Parallel<A>, map: @escaping (A) -> B) -> Parallel<B> {
+    
+    return Parallel<B> { closure in
         
-        source { a in
+        source.run { a in
             
-            b(map(a))
+            closure(map(a))
         }
     }
 }
 
-
-func loadItems(completion: (Int) -> Void) {
+var capturedClosure: ((Int) -> Void)? = nil
+var loadItem = Parallel<Int> { closure in
     
-    completion(10)
+    capturedClosure = closure
 }
 
-func loadViewModels(completion: @escaping (String) -> Void) {
+func map(item: Int) -> String {
     
-    completion("Hello")
+    "result: \(item)"
 }
 
-func adapt(load: @escaping ((Int) -> Void) -> Void, map: @escaping (Int) -> String) -> ((String) -> Void) -> Void {
-
-    return { result in
-
-        load { item in
-
-            let mapped = map(item)
-            result(mapped)
-        }
-    }
+let loadTransformed = transform(loadItem, map: map(item:))
+loadTransformed.run { item in
+    
+    print(item)
 }
 
+capturedClosure?(200)
 
-let result: ((String) -> Void) -> Void = adapt(loadItems(completion:)) { String($0) }
+
