@@ -8,24 +8,50 @@
 import UIKit
 import Feed
 
+final class FeedImageViewModel {
+    
+    private let model: FeedImage
+    
+    init(model: FeedImage) {
+        self.model = model
+    }
+    
+    var isLocationHidden: Bool {
+        model.location == nil
+    }
+    
+    var locationText: String? {
+        model.location
+    }
+    
+    var descriptionText: String? {
+        model.description
+    }
+    
+    var imageURL: URL {
+        model.url
+    }
+}
+
 final class FeedImageCellController {
     
+    private let viewModel: FeedImageViewModel
     private var task: FeedImageDataLoaderTask?
-    private let model: FeedImage
+    
     private let imageLoader: FeedImageDataLoader
     
     init(model: FeedImage, imageLoader: FeedImageDataLoader) {
         
-        self.model = model
+        self.viewModel = FeedImageViewModel(model: model)
         self.imageLoader = imageLoader
     }
     
     func view() -> UITableViewCell {
         
         let cell = FeedImageCell()
-        cell.locationContainer.isHidden = (model.location == nil)
-        cell.locationLabel.text = model.location
-        cell.descriptionLabel.text = model.description
+        cell.locationContainer.isHidden = viewModel.isLocationHidden
+        cell.locationLabel.text = viewModel.locationText
+        cell.descriptionLabel.text = viewModel.descriptionText
         cell.feedImageView.image = nil
         cell.feedImageRetryButton.isHidden = true
         cell.feedImageContainer.startShimmering()
@@ -34,7 +60,7 @@ final class FeedImageCellController {
             
             guard let self else { return }
             
-            self.task = self.imageLoader.loadImageData(from: model.url) {[weak cell] result in
+            self.task = self.imageLoader.loadImageData(from: viewModel.imageURL) {[weak cell] result in
                 
                 let data = try? result.get()
                 let image = data.map(UIImage.init) ?? nil
@@ -52,7 +78,7 @@ final class FeedImageCellController {
     
     func preload() {
         
-        task = imageLoader.loadImageData(from: model.url) { _ in }
+        task = imageLoader.loadImageData(from: viewModel.imageURL) { _ in }
     }
     
     func cancelLoad() {
