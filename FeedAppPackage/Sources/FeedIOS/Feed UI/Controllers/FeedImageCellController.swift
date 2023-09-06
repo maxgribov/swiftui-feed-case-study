@@ -18,12 +18,30 @@ final class FeedImageCellController {
     
     func view() -> UITableViewCell {
         
-        let cell = FeedImageCell()
+        let cell = binded(FeedImageCell())
+        viewModel.loadImage()
+        
+        return cell
+    }
+    
+    func preload() {
+        
+        viewModel.loadImage()
+    }
+    
+    func cancelLoad() {
+        
+        viewModel.cancelLoad()
+    }
+    
+    private func binded(_ cell: FeedImageCell) -> FeedImageCell {
+        
         cell.locationContainer.isHidden = viewModel.isLocationHidden
         cell.locationLabel.text = viewModel.locationText
         cell.descriptionLabel.text = viewModel.descriptionText
         cell.feedImageView.image = nil
         cell.feedImageRetryButton.isHidden = true
+        cell.onRetry = viewModel.loadImage
         
         viewModel.onImageLoad = { [weak cell] image in
             
@@ -45,21 +63,7 @@ final class FeedImageCellController {
             
             cell?.feedImageRetryButton.isHidden = !isRetry
         }
-
-        cell.onRetry = { [weak self] in self?.viewModel.loadImage() }
-        
-        viewModel.loadImage()
         
         return cell
-    }
-    
-    func preload() {
-        
-        viewModel.loadImage()
-    }
-    
-    func cancelLoad() {
-        
-        viewModel.cancelLoad()
     }
 }
