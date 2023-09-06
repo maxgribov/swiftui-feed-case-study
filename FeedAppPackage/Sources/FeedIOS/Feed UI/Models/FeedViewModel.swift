@@ -10,6 +10,7 @@ import Feed
 
 final class FeedViewModel {
     
+    typealias Observer<T> = (T) -> Void
     private let feedLoader: FeedLoader
     
     init(feedLoader: FeedLoader) {
@@ -17,16 +18,12 @@ final class FeedViewModel {
         self.feedLoader = feedLoader
     }
 
-    var onChange: ((FeedViewModel) -> Void)?
-    var onFeedLoad: (([FeedImage]) -> Void)?
-
-    private(set) var isLoading: Bool = false {
-        didSet { onChange?(self) }
-    }
+    var onLoadingStateChange: Observer<Bool>?
+    var onFeedLoad: Observer<[FeedImage]>?
 
     func loadFeed() {
 
-        isLoading = true
+        onLoadingStateChange?(true)
         feedLoader.load() { [weak self] result in
     
             if let feed = try? result.get() {
@@ -34,7 +31,7 @@ final class FeedViewModel {
                 self?.onFeedLoad?(feed)
             }
             
-            self?.isLoading = false
+            self?.onLoadingStateChange?(false)
         }
     }
 }
