@@ -14,23 +14,33 @@ public final class FeedUIComposer {
     
     public static func feedComposedWith(feedLoader: FeedLoader, imageLoader: FeedImageDataLoader) -> FeedViewController {
         
-        let feedViewModel = FeedViewModel(feedLoader: feedLoader)
-        let refreshController = FeedRefreshViewController(viewModel: feedViewModel)
+        let presenter = FeedPresenter(feedLoader: feedLoader)
+        let refreshController = FeedRefreshViewController(presenter: presenter)
         let feedController = FeedViewController(refreshController: refreshController)
-        feedViewModel.onFeedLoad = adaptFeedToCellControllers(forwardingTo: feedController, loader: imageLoader)
+        presenter.loadingView = refreshController
+        presenter.feedView = FeedViewAdapter(controller: feedController, loader: imageLoader)
         
         return feedController
     }
+}
+
+private final class FeedViewAdapter: FeedView {
     
-    private static func adaptFeedToCellControllers(forwardingTo controller: FeedViewController, loader: FeedImageDataLoader) -> ([FeedImage]) -> Void {
+    private weak var controller: FeedViewController?
+    private let loader: FeedImageDataLoader
+    
+    init(controller: FeedViewController, loader: FeedImageDataLoader) {
         
-        return { [weak controller] feed in
+        self.controller = controller
+        self.loader = loader
+    }
+    
+    func display(feed: [FeedImage]) {
+        
+        controller?.tableModel = feed.map { model in
             
-            controller?.tableModel = feed.map { model in
-                
-                let imageViewModel = FeedImageViewModel<UIImage>(model: model, imageLoader: loader, imageTransformer: UIImage.init)
-                return FeedImageCellController(viewModel: imageViewModel)
-            }
+            let imageViewModel = FeedImageViewModel<UIImage>(model: model, imageLoader: loader, imageTransformer: UIImage.init)
+            return FeedImageCellController(viewModel: imageViewModel)
         }
     }
 }
