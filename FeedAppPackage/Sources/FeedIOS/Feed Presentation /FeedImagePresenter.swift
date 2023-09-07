@@ -18,7 +18,7 @@ struct FeedImageViewModel<Image> {
     let shouldRetry: Bool
 }
 
-protocol FeedImageView: AnyObject {
+protocol FeedImageView {
     
     associatedtype Image
     
@@ -29,14 +29,15 @@ final class FeedImagePresenter<View, Image> where View: FeedImageView, View.Imag
     
     typealias Observer<T> = (T) -> Void
     
-    weak var view: View?
+    private let view: View
     private let model: FeedImage
     private var task: FeedImageDataLoaderTask?
     private let imageLoader: FeedImageDataLoader
     private let imageTransformer: (Data) -> Image?
     
-    init(model: FeedImage, imageLoader: FeedImageDataLoader, imageTransformer: @escaping (Data) -> Image?) {
+    init(view: View, model: FeedImage, imageLoader: FeedImageDataLoader, imageTransformer: @escaping (Data) -> Image?) {
         
+        self.view = view
         self.model = model
         self.imageLoader = imageLoader
         self.imageTransformer = imageTransformer
@@ -44,7 +45,7 @@ final class FeedImagePresenter<View, Image> where View: FeedImageView, View.Imag
     
     func loadImage() {
         
-        view?.display(FeedImageViewModel(
+        view.display(FeedImageViewModel(
             isLocationHidden: model.location == nil,
             locationText: model.location,
             descriptionText: model.description,
@@ -62,7 +63,7 @@ final class FeedImagePresenter<View, Image> where View: FeedImageView, View.Imag
         
         if let image = (try? result.get()).flatMap(imageTransformer) {
             
-            view?.display(FeedImageViewModel(
+            view.display(FeedImageViewModel(
                 isLocationHidden: model.location == nil,
                 locationText: model.location,
                 descriptionText: model.description,
@@ -72,7 +73,7 @@ final class FeedImagePresenter<View, Image> where View: FeedImageView, View.Imag
             
         } else {
             
-            view?.display(FeedImageViewModel(
+            view.display(FeedImageViewModel(
                 isLocationHidden: model.location == nil,
                 locationText: model.location,
                 descriptionText: model.description,
