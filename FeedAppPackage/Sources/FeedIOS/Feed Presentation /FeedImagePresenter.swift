@@ -8,16 +8,6 @@
 import Foundation
 import Feed
 
-struct FeedImageViewModel<Image> {
-    
-    let isLocationHidden: Bool
-    let locationText: String?
-    let descriptionText: String?
-    let image: Image?
-    let isLoading: Bool
-    let shouldRetry: Bool
-}
-
 protocol FeedImageView {
     
     associatedtype Image
@@ -39,12 +29,9 @@ final class FeedImagePresenter<View, Image> where View: FeedImageView, View.Imag
     func didStartLoadingImage(for model: FeedImage) {
         
         view.display(FeedImageViewModel(
-            isLocationHidden: model.location == nil,
             locationText: model.location,
             descriptionText: model.description,
-            image: nil,
-            isLoading: true,
-            shouldRetry: false))
+            imageState: .loading))
     }
     
     func didFinishLoadingImage(for model: FeedImage, with imageData: Data) {
@@ -52,44 +39,32 @@ final class FeedImagePresenter<View, Image> where View: FeedImageView, View.Imag
         if let image = imageTransformer(imageData) {
             
             view.display(FeedImageViewModel(
-                isLocationHidden: model.location == nil,
                 locationText: model.location,
                 descriptionText: model.description,
-                image: image,
-                isLoading: false,
-                shouldRetry: false))
+                imageState: .image(image)))
             
         } else {
             
             view.display(FeedImageViewModel(
-                isLocationHidden: model.location == nil,
                 locationText: model.location,
                 descriptionText: model.description,
-                image: nil,
-                isLoading: false,
-                shouldRetry: true))
+                imageState: .retry))
         }
     }
     
     func didFinishLoadingImage(for model: FeedImage, with error: Error) {
         
         view.display(FeedImageViewModel(
-            isLocationHidden: model.location == nil,
             locationText: model.location,
             descriptionText: model.description,
-            image: nil,
-            isLoading: false,
-            shouldRetry: true))
+            imageState: .retry))
     }
     
     func didCancelledLoadingImage(for model: FeedImage) {
         
         view.display(FeedImageViewModel(
-            isLocationHidden: model.location == nil,
             locationText: model.location,
             descriptionText: model.description,
-            image: nil,
-            isLoading: false,
-            shouldRetry: true))
+            imageState: .retry))
     }
 }

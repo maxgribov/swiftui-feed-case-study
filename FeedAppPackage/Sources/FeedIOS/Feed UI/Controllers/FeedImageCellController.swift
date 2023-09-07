@@ -45,7 +45,7 @@ extension FeedImageCell {
     
     func update(with viewModel: FeedImageViewModel<UIImage>, onRetry: @escaping () -> Void) {
         
-        locationContainer.isHidden = viewModel.isLocationHidden
+        locationContainer.isHidden = viewModel.locationText == nil
         locationLabel.text = viewModel.locationText
         descriptionLabel.text = viewModel.descriptionText
         feedImageView.image = viewModel.image
