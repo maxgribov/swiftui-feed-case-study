@@ -67,7 +67,7 @@ private final class FeedViewAdapter: FeedView {
             
             let imageController = FeedImageCellController()
             let imagePresenter = FeedImagePresenter<WeakRefVirtualProxy<FeedImageCellController>, UIImage>(view: WeakRefVirtualProxy(imageController), model: model, imageLoader: loader, imageTransformer: UIImage.init)
-            imageController.delegate = FeedImagePresentationAdapter(presenter: imagePresenter)
+            imageController.delegate = FeedImagePresentationAdapter(model: model, imageLoader: loader, presenter: imagePresenter)
 
             return imageController
         }
@@ -76,20 +76,40 @@ private final class FeedViewAdapter: FeedView {
 
 private final class FeedImagePresentationAdapter: FeedImageCellControllerDelegate {
     
+    private let model: FeedImage
+    private var task: FeedImageDataLoaderTask?
+    private let imageLoader: FeedImageDataLoader
     private let presenter: FeedImagePresenter<WeakRefVirtualProxy<FeedImageCellController>, UIImage>
     
-    init(presenter: FeedImagePresenter<WeakRefVirtualProxy<FeedImageCellController>, UIImage>) {
+    init(model: FeedImage, imageLoader: FeedImageDataLoader, presenter: FeedImagePresenter<WeakRefVirtualProxy<FeedImageCellController>, UIImage>) {
+        
+        self.model = model
+        self.imageLoader = imageLoader
         self.presenter = presenter
     }
     
     func loadImage() {
         
-        presenter.loadImage()
+        presenter.didStartLoadingImage(for: model)
+        
+        task = imageLoader.loadImageData(from: model.url) {[weak self] result in
+            
+            guard let self else { return }
+            
+            switch result {
+            case let .success(data):
+                presenter.didFinishLoadingImage(for: model, with: data)
+                
+            case let .failure(error):
+                presenter.didFinishLoadingImage(for: model, with: error)
+            }
+        }
     }
     
     func cancelLoad() {
         
-        presenter.cancelLoad()
+        task?.cancel()
+        presenter.didCancelledLoadingImage(for: model)
     }
 }
 

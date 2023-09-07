@@ -27,23 +27,16 @@ protocol FeedImageView {
 
 final class FeedImagePresenter<View, Image> where View: FeedImageView, View.Image == Image {
     
-    typealias Observer<T> = (T) -> Void
-    
     private let view: View
-    private let model: FeedImage
-    private var task: FeedImageDataLoaderTask?
-    private let imageLoader: FeedImageDataLoader
     private let imageTransformer: (Data) -> Image?
     
     init(view: View, model: FeedImage, imageLoader: FeedImageDataLoader, imageTransformer: @escaping (Data) -> Image?) {
         
         self.view = view
-        self.model = model
-        self.imageLoader = imageLoader
         self.imageTransformer = imageTransformer
     }
     
-    func loadImage() {
+    func didStartLoadingImage(for model: FeedImage) {
         
         view.display(FeedImageViewModel(
             isLocationHidden: model.location == nil,
@@ -52,16 +45,11 @@ final class FeedImagePresenter<View, Image> where View: FeedImageView, View.Imag
             image: nil,
             isLoading: true,
             shouldRetry: false))
-        
-        task = imageLoader.loadImageData(from: model.url) {[weak self] result in
-            
-            self?.handle(result)
-        }
     }
     
-    private func handle(_ result: FeedImageDataLoader.Result) {
+    func didFinishLoadingImage(for model: FeedImage, with imageData: Data) {
         
-        if let image = (try? result.get()).flatMap(imageTransformer) {
+        if let image = imageTransformer(imageData) {
             
             view.display(FeedImageViewModel(
                 isLocationHidden: model.location == nil,
@@ -83,8 +71,25 @@ final class FeedImagePresenter<View, Image> where View: FeedImageView, View.Imag
         }
     }
     
-    func cancelLoad() {
+    func didFinishLoadingImage(for model: FeedImage, with error: Error) {
         
-        task?.cancel()
+        view.display(FeedImageViewModel(
+            isLocationHidden: model.location == nil,
+            locationText: model.location,
+            descriptionText: model.description,
+            image: nil,
+            isLoading: false,
+            shouldRetry: true))
+    }
+    
+    func didCancelledLoadingImage(for model: FeedImage) {
+        
+        view.display(FeedImageViewModel(
+            isLocationHidden: model.location == nil,
+            locationText: model.location,
+            descriptionText: model.description,
+            image: nil,
+            isLoading: false,
+            shouldRetry: true))
     }
 }
