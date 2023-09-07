@@ -23,9 +23,9 @@ final class FeedRefreshViewController: NSObject, FeedLoadingView {
         presenter.loadFeed()
     }
     
-    func display(isLoading: Bool) {
+    func display(_ viewModel: FeedLoadingViewModel) {
         
-        switch isLoading {
+        switch viewModel.isLoading {
         case true:
             view.beginRefreshing()
             
