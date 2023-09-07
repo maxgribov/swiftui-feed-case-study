@@ -8,7 +8,7 @@
 import Foundation
 import Feed
 
-protocol FeedLoadingView: AnyObject {
+protocol FeedLoadingView {
     
     func display(isLoading: Bool)
 }
@@ -28,7 +28,7 @@ final class FeedPresenter {
     }
 
     var feedView: FeedView?
-    weak var loadingView: FeedLoadingView?
+    var loadingView: FeedLoadingView?
     
     func loadFeed() {
 
