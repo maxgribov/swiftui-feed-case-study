@@ -20,9 +20,16 @@ public final class FeedUIComposer {
         
         presentationAdapter.presenter = FeedPresenter(
             feedView: FeedViewAdapter(controller: feedController, loader: imageLoader),
-            loadingView: WeakRefVirtualProxy(refreshController))
+            loadingView: WeakRefVirtualProxy(refreshController),
+            errorView: DummyErrorView())
         
         return feedController
+    }
+}
+
+private final class DummyErrorView: FeedErrorView {
+    
+    func display(_ viewModel: FeedErrorViewModel) {
     }
 }
 
