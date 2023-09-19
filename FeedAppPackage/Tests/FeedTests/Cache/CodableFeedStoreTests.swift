@@ -135,7 +135,12 @@ final class CodableFeedStoreTests: XCTestCase, FailableFeedStore {
         assertThatDeleteEmptiesPreviouslyInsertedCache(on: sut)
     }
     
-    
+    #if targetEnvironment(simulator)
+    func test_delete_deliversErrorOnDeletionError() {
+
+        /// Not working on simulator because we create file directory by ourselves and it can be deleted
+    }
+    #else
     func test_delete_deliversErrorOnDeletionError() {
 
         let noDeletePermissionsURL = cachesDirectory()
@@ -143,6 +148,7 @@ final class CodableFeedStoreTests: XCTestCase, FailableFeedStore {
         
         assertThatDeleteDeliversErrorOnDeletionError(on: sut)
     }
+    #endif
     
     func test_delete_hasNoSideEffectsOnDeletionError() {
 
@@ -159,7 +165,7 @@ final class CodableFeedStoreTests: XCTestCase, FailableFeedStore {
         assertThatSideEffectsRunSerially(on: sut)
     }
     
-    //MARK: - Helpes
+    //MARK: - Helpers
     
     private func makeSUT(storeURL: URL? = nil, file: StaticString = #filePath, line: UInt = #line) -> FeedStore {
         
@@ -176,7 +182,21 @@ final class CodableFeedStoreTests: XCTestCase, FailableFeedStore {
     
     private func cachesDirectory() -> URL {
         
-        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        if let simulatorSharedDir = ProcessInfo().environment["SIMULATOR_SHARED_RESOURCES_DIRECTORY"] {
+            
+            // running on the simulator. We'll write to ~/Library/Caches
+            let simulatorHomeDirURL = URL(fileURLWithPath: simulatorSharedDir)
+            let cachesDirURL = simulatorHomeDirURL.appendingPathComponent("Library/Caches")
+            XCTAssertTrue(FileManager.default.isWritableFile(atPath: cachesDirURL.path), "Cannot write to simulator Caches directory")
+            let sharedFolderURL = cachesDirURL.appendingPathComponent("Tests")
+            XCTAssertNoThrow( try FileManager.default.createDirectory(at: sharedFolderURL, withIntermediateDirectories: true, attributes: nil), "Failed to create shared folder \(sharedFolderURL.lastPathComponent) in simulator Caches directory at \(cachesDirURL)")
+
+            return sharedFolderURL
+            
+        } else {
+            
+            return FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        }
     }
     
     private func setupEmptyStoreState() {
