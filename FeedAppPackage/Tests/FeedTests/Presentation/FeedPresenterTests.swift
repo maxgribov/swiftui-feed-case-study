@@ -61,6 +61,8 @@ final class FeedPresenter {
         self.errorView = errorView
     }
     
+    static var title: String { "Feed" }
+    
     func didStartLoadingFeed() {
         
         loadingView.display(.init(isLoading: true))
@@ -117,6 +119,11 @@ final class FeedPresenterTests: XCTestCase {
         
         XCTAssertEqual(view.messages, [.display(errorMessage: "Connection error"),
                                        .display(isLoading: false)])
+    }
+    
+    func test_title_correct() {
+        
+        XCTAssertEqual(FeedPresenter.title, "Feed")
     }
     
     //MARK: - Helpers
