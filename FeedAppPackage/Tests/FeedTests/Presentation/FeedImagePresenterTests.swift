@@ -71,7 +71,7 @@ final class FeedImagePresenterTests: XCTestCase {
     
     //MARK: - Helpers
     
-    private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedImagePresenter<String, ViewSpy>, view: ViewSpy) {
+    private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedImagePresenter<ViewSpy, String>, view: ViewSpy) {
         
         let view = ViewSpy()
         let sut = FeedImagePresenter(view: view, imageTransformer: Self.imageTransformer(_:))
