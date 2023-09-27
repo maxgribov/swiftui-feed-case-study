@@ -28,7 +28,7 @@ public struct FeedImageViewModel<Image> {
     }
 }
 
-public final class FeedImagePresenter<Image, View> where View: FeedImageView, View.Image == Image {
+public final class FeedImagePresenter<View, Image> where View: FeedImageView, View.Image == Image {
     
     private let view: View
     private let imageTransformer: (Data) -> Image?

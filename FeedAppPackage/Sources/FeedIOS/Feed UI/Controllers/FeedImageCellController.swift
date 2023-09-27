@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Feed
 
 protocol FeedImageCellControllerDelegate {
     
@@ -60,5 +61,41 @@ extension FeedImageCell {
         }
         
         feedImageRetryButton.isHidden = !viewModel.shouldRetry
+    }
+}
+
+extension FeedImageViewModel {
+    
+    var image: Image? {
+        
+        switch imageState {
+        case .image(let image):
+            return image
+            
+        default:
+            return nil
+        }
+    }
+    
+    var isLoading: Bool {
+        
+        switch imageState {
+        case .loading:
+            return true
+            
+        default:
+            return false
+        }
+    }
+    
+    var shouldRetry: Bool {
+        
+        switch imageState {
+        case .retry:
+            return true
+            
+        default:
+            return false
+        }
     }
 }
