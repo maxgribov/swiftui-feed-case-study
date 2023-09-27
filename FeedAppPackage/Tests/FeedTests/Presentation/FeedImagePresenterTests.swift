@@ -91,11 +91,10 @@ final class FeedImagePresenterTests: XCTestCase {
         let (sut, view) = makeSUT()
         
         let feedItem = uniqueFeedItem()
-        let invalidImageData = Data("invalid".utf8)
+        let invalidImageData = invalidImageData
         sut.didFinishLoadingImage(for: feedItem, with: invalidImageData)
         
         XCTAssertEqual(view.messages, [.displayRetry(feedItem.location, feedItem.description)])
-        
     }
     
     func test_didFinishLoadingImageWithData_displayImage() {
@@ -103,10 +102,10 @@ final class FeedImagePresenterTests: XCTestCase {
         let (sut, view) = makeSUT()
         
         let feedItem = uniqueFeedItem()
-        let validImageData = Data("valid".utf8)
+        let validImageData = validImageData
         sut.didFinishLoadingImage(for: feedItem, with: validImageData)
         
-        XCTAssertEqual(view.messages, [.displayImage(feedItem.location, feedItem.description, "valid")])
+        XCTAssertEqual(view.messages, [.displayImage(feedItem.location, feedItem.description, Self.validImage)])
     }
     
     //MARK: - Helpers
@@ -151,10 +150,14 @@ final class FeedImagePresenterTests: XCTestCase {
     
     private static func imageTransformer(_ data: Data) -> String? {
         
-        guard let stringValue = String(data: data, encoding: .utf8) else {
+        guard let imageValue = String(data: data, encoding: .utf8) else {
             return nil
         }
         
-        return stringValue == "valid" ? stringValue : nil
+        return imageValue == Self.validImage ? imageValue : nil
     }
+    
+    private static var validImage: String { "valid" }
+    private var validImageData: Data { Data(Self.validImage.utf8) }
+    private var invalidImageData: Data { Data("invalid".utf8) }
 }
