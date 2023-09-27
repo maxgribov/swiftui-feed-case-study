@@ -73,6 +73,14 @@ final class FeedImagePresenter<Image, View> where View: FeedImageView, View.Imag
             descriptionText: model.description,
             imageState: .retry))
     }
+    
+    func didCancelledLoadingImage(for model: FeedImage) {
+        
+        view.display(FeedImageViewModel(
+            locationText: model.location,
+            descriptionText: model.description,
+            imageState: .retry))
+    }
 }
 
 final class FeedImagePresenterTests: XCTestCase {
@@ -122,6 +130,16 @@ final class FeedImagePresenterTests: XCTestCase {
         
         let feedItem = uniqueFeedItem()
         sut.didFinishLoadingImage(for: feedItem, with: anyNSError())
+        
+        XCTAssertEqual(view.messages, [.displayRetry(feedItem.location, feedItem.description)])
+    }
+    
+    func test_didCancelledLoadingImage_displayRetryButton() {
+        
+        let (sut, view) = makeSUT()
+        
+        let feedItem = uniqueFeedItem()
+        sut.didCancelledLoadingImage(for: feedItem)
         
         XCTAssertEqual(view.messages, [.displayRetry(feedItem.location, feedItem.description)])
     }
