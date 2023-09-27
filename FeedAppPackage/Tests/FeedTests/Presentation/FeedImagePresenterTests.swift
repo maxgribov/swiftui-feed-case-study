@@ -98,6 +98,17 @@ final class FeedImagePresenterTests: XCTestCase {
         
     }
     
+    func test_didFinishLoadingImageWithData_displayImage() {
+        
+        let (sut, view) = makeSUT()
+        
+        let feedItem = uniqueFeedItem()
+        let validImageData = Data("valid".utf8)
+        sut.didFinishLoadingImage(for: feedItem, with: validImageData)
+        
+        XCTAssertEqual(view.messages, [.displayImage(feedItem.location, feedItem.description, "valid")])
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedImagePresenter<String, ViewSpy>, view: ViewSpy) {
@@ -120,6 +131,7 @@ final class FeedImagePresenterTests: XCTestCase {
             
             case displayLoading(String?, String?)
             case displayRetry(String?, String?)
+            case displayImage(String?, String?, String)
         }
         
         func display(_ viewModel: FeedImageViewModel<String>) {
@@ -131,14 +143,18 @@ final class FeedImagePresenterTests: XCTestCase {
             case .retry:
                 messages.append(.displayRetry(viewModel.locationText, viewModel.descriptionText))
                 
-            default:
-                break
+            case let .image(imageValue):
+                messages.append(.displayImage(viewModel.locationText, viewModel.descriptionText, imageValue))
             }
         }
     }
     
     private static func imageTransformer(_ data: Data) -> String? {
         
-        return nil
+        guard let stringValue = String(data: data, encoding: .utf8) else {
+            return nil
+        }
+        
+        return stringValue == "valid" ? stringValue : nil
     }
 }
