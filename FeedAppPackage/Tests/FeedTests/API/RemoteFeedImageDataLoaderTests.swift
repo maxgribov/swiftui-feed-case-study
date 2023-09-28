@@ -49,16 +49,14 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
 
     func test_init_doesNotSendAnyRequest() {
         
-        let client = HTTPClientSpy()
-        let sut = RemoteFeedImageDataLoader(client: client)
+        let (_, client) = makeSUT()
         
         XCTAssertEqual(client.requests.count, 0)
     }
     
     func test_loadImageData_returnConnectivityErrorOnClientError() {
         
-        let client = HTTPClientSpy()
-        let sut = RemoteFeedImageDataLoader(client: client)
+        let (sut, client) = makeSUT()
         
         let exp = expectation(description: "Request completion")
         _ = sut.loadImageData(from: anyURL()) { result in
@@ -86,6 +84,14 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
     }
     
     //MARK: - Helpers
+    
+    private func makeSUT() -> (sut: RemoteFeedImageDataLoader, client: HTTPClientSpy) {
+        
+        let client = HTTPClientSpy()
+        let sut = RemoteFeedImageDataLoader(client: client)
+        
+        return (sut, client)
+    }
     
     class HTTPClientSpy: HTTPClient {
         
