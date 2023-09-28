@@ -85,11 +85,40 @@ final class URLSessionHTTPClientTests: XCTestCase {
         XCTAssertEqual(resultValues?.response.statusCode, response.statusCode)
     }
     
+    func test_taskCancel_respondWithTaskCancelledError() {
+        
+        let data = anyData()
+        let response = anyHTTPURLResponse()
+        URLProtocolStub.stub(data: data, response: response, error: nil)
+        
+        let sut = makeSUT()
+        let exp = expectation(description: "Waiting for callback")
+        
+        let task = sut.get(from: anyURL()) { response in
+            
+            switch response {
+            case let .failure(error):
+                XCTAssertEqual((error as NSError).code, -999)
+                
+            default:
+                XCTFail("Expected cancel error, got \(response) instead")
+            }
+            exp.fulfill()
+        }
+        task.cancel()
+    
+        wait(for: [exp], timeout: 0.1)
+    }
+    
     //MARK: - Helpers Methods
     
     private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> HTTPClient {
         
-        let sut = URLSessionHTTPClient()
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [URLProtocolStub.self]
+        let session = URLSession(configuration: configuration)
+
+        let sut = URLSessionHTTPClient(session: session)
         trackForMemoryLeaks(sut, file: file, line: line)
         
         return sut
