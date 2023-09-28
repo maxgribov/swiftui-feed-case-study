@@ -17,9 +17,10 @@ public final class URLSessionHTTPClient: HTTPClient {
     
     private struct UnexpectedResultError: Error {}
     
-    public func get(from url: URL, completion: @escaping (HTTPClient.Result) -> Void) {
+    @discardableResult
+    public func get(from url: URL, completion: @escaping (HTTPClient.Result) -> Void) -> HTTPClientTask {
         
-        session.dataTask(with: url) { data, response, error in
+        let task = session.dataTask(with: url) { data, response, error in
             
             completion(Result {
                 
@@ -36,7 +37,11 @@ public final class URLSessionHTTPClient: HTTPClient {
                     throw UnexpectedResultError()
                 }
             })
-            
-        }.resume()
+        }
+        task.resume()
+        
+        return task
     }
 }
+
+extension URLSessionDataTask: HTTPClientTask {}

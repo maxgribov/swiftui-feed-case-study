@@ -7,6 +7,10 @@
 
 import Foundation
 
+public protocol HTTPClientTask {
+    
+    func cancel()
+}
 
 public protocol HTTPClient {
     
@@ -14,5 +18,6 @@ public protocol HTTPClient {
     
     /// The completion handler con be invoked in any thread.
     /// Cliens are responsable to dispatch to approtpiate threads, if needed.
-    func get(from url: URL, completion: @escaping (Result) -> Void)
+    @discardableResult
+    func get(from url: URL, completion: @escaping (Result) -> Void) -> HTTPClientTask
 }

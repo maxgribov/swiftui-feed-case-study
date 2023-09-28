@@ -89,9 +89,11 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         
         private(set) var requests = [(url: URL, completion: (HTTPClient.Result) -> Void)]()
         
-        func get(from url: URL, completion: @escaping (HTTPClient.Result) -> Void) {
+        @discardableResult
+        func get(from url: URL, completion: @escaping (HTTPClient.Result) -> Void) -> HTTPClientTask {
             
             requests.append((url, completion))
+            return Task()
         }
         
         func complete(with error: Error, at index: Int = 0) {
@@ -102,6 +104,11 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         func complete(with data: Data, at index: Int = 0) {
             
             requests[index].completion(.success((data, HTTPURLResponse())))
+        }
+        
+        struct Task: HTTPClientTask {
+            
+            func cancel() {}
         }
     }
     
