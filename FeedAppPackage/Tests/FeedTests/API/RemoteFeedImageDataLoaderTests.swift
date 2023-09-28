@@ -58,29 +58,9 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         
         let (sut, client) = makeSUT()
         
-        let exp = expectation(description: "Request completion")
-        _ = sut.loadImageData(from: anyURL()) { result in
-            
-            exp.fulfill()
-            
-            switch result {
-            case let .failure(error):
-                guard let imageLoaderError = error as? RemoteFeedImageDataLoader.Error else {
-                    return XCTFail("Expected image loader error, got \(error) instead")
-                }
-                guard imageLoaderError == .connectivity else {
-                    return XCTFail("Expected connectivity error, got \(imageLoaderError) instead")
-                }
-                
-                break
-            
-            default:
-                XCTFail("Expected connectivity error, got \(result) instead")
-            }
+        expect(sut, error: .connectivity) {
+            client.complete(with: anyNSError())
         }
-        
-        client.complete(with: anyNSError())
-        wait(for: [exp], timeout: 1.0)
     }
     
     //MARK: - Helpers
@@ -108,5 +88,32 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
             
             requests[index].completion(.failure(error))
         }
+    }
+    
+    private func expect(_ sut: RemoteFeedImageDataLoader, error expectedError: RemoteFeedImageDataLoader.Error, on action: () -> Void, file: StaticString = #filePath, line: UInt = #line) {
+        
+        let exp = expectation(description: "Request completion")
+        _ = sut.loadImageData(from: anyURL()) { result in
+            
+            exp.fulfill()
+            
+            switch result {
+            case let .failure(error):
+                guard let receivedError = error as? RemoteFeedImageDataLoader.Error else {
+                    return XCTFail("Expected image loader error, got \(error) instead", file: file, line: line)
+                }
+                guard receivedError == expectedError else {
+                    return XCTFail("Expected \(expectedError) error, got \(receivedError) instead", file: file, line: line)
+                }
+                
+                break
+            
+            default:
+                XCTFail("Expected connectivity error, got \(result) instead", file: file, line: line)
+            }
+        }
+        
+        action()
+        wait(for: [exp], timeout: 1.0)
     }
 }
