@@ -25,8 +25,8 @@ final class RemoteFeedImageDataLoader {
             case .failure:
                 completion(.failure(Error.connectivity))
                 
-            default:
-                break
+            case .success:
+                completion(.failure(Error.invalidData))
             }
         }
         
@@ -42,6 +42,7 @@ final class RemoteFeedImageDataLoader {
     
     enum Error: Swift.Error {
         case connectivity
+        case invalidData
     }
 }
 
@@ -60,6 +61,15 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         
         expect(sut, error: .connectivity) {
             client.complete(with: anyNSError())
+        }
+    }
+    
+    func test_loadImageData_returnInvalidDataErrorOnInvalidDataFromClient() {
+        
+        let (sut, client) = makeSUT()
+        
+        expect(sut, error: .invalidData) {
+            client.complete(with: invalidData)
         }
     }
     
@@ -87,6 +97,11 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         func complete(with error: Error, at index: Int = 0) {
             
             requests[index].completion(.failure(error))
+        }
+        
+        func complete(with data: Data, at index: Int = 0) {
+            
+            requests[index].completion(.success((data, HTTPURLResponse())))
         }
     }
     
@@ -116,4 +131,6 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         action()
         wait(for: [exp], timeout: 1.0)
     }
+    
+    private var invalidData: Data { Data() }
 }
