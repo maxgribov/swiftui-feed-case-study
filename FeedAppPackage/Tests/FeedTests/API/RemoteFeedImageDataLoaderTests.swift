@@ -28,7 +28,7 @@ final class RemoteFeedImageDataLoader {
     
     func loadImageData(from url: URL, completion: @escaping (FeedImageDataLoader.Result) -> Void) -> FeedImageDataLoaderTask {
         
-        client.get(from: url) { result in
+        let task = client.get(from: url) { result in
             
             switch result {
             case .failure:
@@ -47,13 +47,14 @@ final class RemoteFeedImageDataLoader {
             }
         }
         
-        return Task()
+        return Task(clientTask: task)
     }
     
     struct Task: FeedImageDataLoaderTask {
+        let clientTask: HTTPClientTask
         
         func cancel() {
-            
+            clientTask.cancel()
         }
     }
     
@@ -134,6 +135,18 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         expect(sut, result: .success(nonEmptyData)) {
             client.complete(withStatusCode: 200, data: nonEmptyData)
         }
+    }
+    
+    func test_cancelLoadImageDataTask_cancelsClientURLRquqest() {
+        
+        let (sut, client) = makeSUT()
+        let url = URL(string: "http://some-url.com")!
+        
+        let task = sut.loadImageData(from: url) {_ in }
+        XCTAssertTrue(client.cancelledURLs.isEmpty)
+        
+        task.cancel()
+        XCTAssertEqual(client.cancelledURLs, [url])
     }
     
     //MARK: - Helpers
