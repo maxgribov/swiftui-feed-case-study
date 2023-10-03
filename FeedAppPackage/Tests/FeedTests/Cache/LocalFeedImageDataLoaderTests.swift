@@ -58,6 +58,17 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         XCTAssertEqual(store.receivedMessages, [.loadImage(url)])
     }
     
+    func test_loadImageData_messageStoreLoadImageTwice() {
+        
+        let (sut, store) = makeSUT()
+        
+        let url = anyURL()
+        _ = sut.loadImageData(from: url) {_ in }
+        _ = sut.loadImageData(from: url) {_ in }
+        
+        XCTAssertEqual(store.receivedMessages, [.loadImage(url), .loadImage(url)])
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT() -> (sut: LocalFeedImageDataLoader, store: LocalStoreSpy) {
