@@ -87,12 +87,15 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         }
     }
     
-    func test_loadImageData_returnInvalidDataErrorOnInvalidStatusCode() {
+    func test_loadImageData_returnInvalidDataErrorOnNon200HTTPResponse() {
         
         let (sut, client) = makeSUT()
+        let samples = [100, 199, 201, 400, 404]
         
-        expect(sut, result: failure(.invalidData)) {
-            client.complete(withStatusCode: 400, data: anyData())
+        samples.enumerated().forEach { (index, status) in
+            expect(sut, result: failure(.invalidData)) {
+                client.complete(withStatusCode: status, data: anyData(), at: index)
+            }
         }
     }
     
