@@ -28,33 +28,38 @@ final class RemoteFeedImageDataLoader {
     
     func loadImageData(from url: URL, completion: @escaping (FeedImageDataLoader.Result) -> Void) -> FeedImageDataLoaderTask {
         
-        let task = client.get(from: url) { result in
+        let task = HTTPClientTaskWrapper(completion: completion)
+        task.wrapped = client.get(from: url) { result in
             
-            switch result {
-            case .failure:
-                completion(.failure(Error.connectivity))
-                
-            case let .success((data, response)):
-                
-                if response.isOK, data.isEmpty == false {
-                    
-                    completion(.success(data))
-                    
-                } else {
-                    
-                    completion(.failure(Error.invalidData))
-                }
-            }
+            task.complete(with: result
+                .mapError { _ in Error.connectivity }
+                .flatMap { (data, response) in
+                    let isValidResponse = response.isOK && !data.isEmpty
+                    return isValidResponse ? .success(data) : .failure(Error.invalidData)
+                })
         }
         
-        return Task(clientTask: task)
+        return task
     }
     
-    struct Task: FeedImageDataLoaderTask {
-        let clientTask: HTTPClientTask
+    final class HTTPClientTaskWrapper: FeedImageDataLoaderTask {
+        
+        var wrapped: HTTPClientTask?
+        var completion: ((FeedImageDataLoader.Result) -> Void)?
+        
+        init(completion: @escaping (FeedImageDataLoader.Result) -> Void) {
+            
+            self.completion = completion
+        }
         
         func cancel() {
-            clientTask.cancel()
+            wrapped?.cancel()
+            completion = nil
+        }
+        
+        func complete(with result: FeedImageDataLoader.Result) {
+            
+            completion?(result)
         }
     }
     
@@ -131,7 +136,7 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         
         let (sut, client) = makeSUT()
         
-        let nonEmptyData = Data("Non empty".utf8)
+        let nonEmptyData = nonEmptyData()
         expect(sut, result: .success(nonEmptyData)) {
             client.complete(withStatusCode: 200, data: nonEmptyData)
         }
@@ -147,6 +152,21 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         
         task.cancel()
         XCTAssertEqual(client.cancelledURLs, [url])
+    }
+    
+    func test_loadImageDataTask_doesNotDeliversResultAfterCancellingTask() {
+        
+        let (sut, client) = makeSUT()
+        
+        var results = [FeedImageDataLoader.Result]()
+        let task = sut.loadImageData(from: anyURL()) { results.append($0) }
+        task.cancel()
+        
+        client.complete(withStatusCode: 400, data: anyData())
+        client.complete(withStatusCode: 200, data: nonEmptyData())
+        client.complete(with: anyNSError())
+        
+        XCTAssertTrue(results.isEmpty, "Expected empty results, got \(results)")
     }
     
     //MARK: - Helpers
@@ -188,6 +208,7 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
     }
     
     private func anyData() -> Data { Data() }
+    private func nonEmptyData() -> Data { Data("Non empty".utf8) }
     
     func failure( _ error: RemoteFeedImageDataLoader.Error) -> FeedImageDataLoader.Result {
         .failure(error)
