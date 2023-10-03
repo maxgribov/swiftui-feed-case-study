@@ -19,13 +19,22 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
 
     func test_init_doesNotMessageStoreUponCreation() {
         
-        let store = LocalStoreSpy()
-        let sut = LocalFeedImageDataLoader(store: store)
+        let (_, store) = makeSUT()
         
         XCTAssertTrue(store.receivedMessages.isEmpty)
     }
     
     //MARK: - Helpers
+    
+    private func makeSUT() -> (sut: LocalFeedImageDataLoader, store: LocalStoreSpy) {
+        
+        let store = LocalStoreSpy()
+        let sut = LocalFeedImageDataLoader(store: store)
+        trackForMemoryLeaks(sut)
+        trackForMemoryLeaks(store)
+        
+        return (sut, store)
+    }
     
     class LocalStoreSpy {
         
