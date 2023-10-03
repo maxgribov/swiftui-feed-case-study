@@ -52,7 +52,7 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         
         let (_, client) = makeSUT()
         
-        XCTAssertEqual(client.requests.count, 0)
+        XCTAssertEqual(client.requestedURLs.count, 0)
     }
     
     func test_loadImageData_returnConnectivityErrorOnClientError() {
@@ -64,12 +64,12 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         }
     }
     
-    func test_loadImageData_returnInvalidDataErrorOnInvalidDataFromClient() {
+    func test_loadImageData_returnInvalidDataErrorOnInvalidStatusCode() {
         
         let (sut, client) = makeSUT()
         
         expect(sut, error: .invalidData) {
-            client.complete(with: invalidData)
+            client.complete(withStatusCode: 400, data: anyData())
         }
     }
     
@@ -84,34 +84,7 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         
         return (sut, client)
     }
-    
-    class HTTPClientSpy: HTTPClient {
         
-        private(set) var requests = [(url: URL, completion: (HTTPClient.Result) -> Void)]()
-        
-        @discardableResult
-        func get(from url: URL, completion: @escaping (HTTPClient.Result) -> Void) -> HTTPClientTask {
-            
-            requests.append((url, completion))
-            return Task()
-        }
-        
-        func complete(with error: Error, at index: Int = 0) {
-            
-            requests[index].completion(.failure(error))
-        }
-        
-        func complete(with data: Data, at index: Int = 0) {
-            
-            requests[index].completion(.success((data, HTTPURLResponse())))
-        }
-        
-        struct Task: HTTPClientTask {
-            
-            func cancel() {}
-        }
-    }
-    
     private func expect(_ sut: RemoteFeedImageDataLoader, error expectedError: RemoteFeedImageDataLoader.Error, on action: () -> Void, file: StaticString = #filePath, line: UInt = #line) {
         
         let exp = expectation(description: "Request completion")
@@ -139,5 +112,5 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         wait(for: [exp], timeout: 1.0)
     }
     
-    private var invalidData: Data { Data() }
+    private func anyData() -> Data { Data() }
 }
