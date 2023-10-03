@@ -125,7 +125,7 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
     
     //MARK: - Helpers
     
-    private func makeSUT() -> (sut: RemoteFeedImageDataLoader, client: HTTPClientSpy) {
+    private func makeSUT() -> (sut: FeedImageDataLoader, client: HTTPClientSpy) {
         
         let client = HTTPClientSpy()
         let sut = RemoteFeedImageDataLoader(client: client)
@@ -135,7 +135,7 @@ final class RemoteFeedImageDataLoaderTests: XCTestCase {
         return (sut, client)
     }
         
-    private func expect(_ sut: RemoteFeedImageDataLoader, result expectedResult: FeedImageDataLoader.Result, on action: () -> Void, file: StaticString = #filePath, line: UInt = #line) {
+    private func expect(_ sut: FeedImageDataLoader, result expectedResult: FeedImageDataLoader.Result, on action: () -> Void, file: StaticString = #filePath, line: UInt = #line) {
         
         let exp = expectation(description: "Request completion")
         _ = sut.loadImageData(from: anyURL()) { result in
