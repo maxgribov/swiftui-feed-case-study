@@ -35,7 +35,7 @@ final class LocalFeedImageDataLoader {
         let task = FeedImageDataLoaderTaskWrapper(completion: completion)
         task.wrapped = store.retrieve(for: url) { result in
             
-            completion(result.flatMap({ data in
+            task.complete(with: result.flatMap({ data in
                 
                 if let data = data {
                     
@@ -156,20 +156,20 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         XCTAssertEqual(store.receivedMessages, [.retrieve(url), .cancelRetrieve(url)])
     }
     
-//    func test_cancelLoadImageData_deliversNoResult() {
-//        
-//        let (sut, store) = makeSUT()
-//        
-//        var receivedResults = [FeedImageDataLoader.Result]()
-//        let task = sut.loadImageData(from: anyURL()) { receivedResults.append($0) }
-//        task.cancel()
-//        
-//        store.complete(with: nil)
-//        store.complete(with: Data("some data".utf8))
-//        store.complete(with: anyNSError())
-//        
-//        XCTAssertTrue(receivedResults.isEmpty)
-//    }
+    func test_loadImageData_deliversNoAnyResultOnCancel() {
+        
+        let (sut, store) = makeSUT()
+        
+        var receivedResults = [FeedImageDataLoader.Result]()
+        let task = sut.loadImageData(from: anyURL()) { receivedResults.append($0) }
+        task.cancel()
+        
+        store.complete(with: nil)
+        store.complete(with: Data("some data".utf8))
+        store.complete(with: anyNSError())
+        
+        XCTAssertTrue(receivedResults.isEmpty)
+    }
     
     //MARK: - Helpers
     
