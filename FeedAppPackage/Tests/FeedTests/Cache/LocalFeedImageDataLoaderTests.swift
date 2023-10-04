@@ -10,7 +10,9 @@ import Feed
 
 protocol FeedImageDataStore {
     
-    func retrieve(for url: URL)
+    typealias Result = Swift.Result<Data?, Error>
+    
+    func retrieve(for url: URL, completion: @escaping (Result) -> Void)
 }
 
 final class LocalFeedImageDataLoader {
@@ -24,7 +26,20 @@ final class LocalFeedImageDataLoader {
     
     func loadImageData(from url: URL, completion: @escaping (FeedImageDataLoader.Result) -> Void) -> FeedImageDataLoaderTask {
         
-        store.retrieve(for: url)
+        store.retrieve(for: url) { result in
+            
+            switch result {
+            case let .success(data):
+                if let data = data {
+                    completion(.success(data))
+                } else {
+                    completion(.failure(Error.notFound))
+                }
+                
+            default:
+                break
+            }
+        }
         return Task()
     }
     
@@ -37,7 +52,6 @@ final class LocalFeedImageDataLoader {
         }
     }
 }
-
 
 final class LocalFeedImageDataLoaderTests: XCTestCase {
 
@@ -55,7 +69,7 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         let url = anyURL()
         _ = sut.loadImageData(from: url) {_ in }
         
-        XCTAssertEqual(store.receivedMessages, [.loadImage(url)])
+        XCTAssertEqual(store.receivedMessages, [.retrieve(url)])
     }
     
     func test_loadImageData_messageStoreLoadImageTwice() {
@@ -66,7 +80,29 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         _ = sut.loadImageData(from: url) {_ in }
         _ = sut.loadImageData(from: url) {_ in }
         
-        XCTAssertEqual(store.receivedMessages, [.loadImage(url), .loadImage(url)])
+        XCTAssertEqual(store.receivedMessages, [.retrieve(url), .retrieve(url)])
+    }
+    
+    func test_loadImageData_receivesNotFoundErrorOnStoreEmptyData() {
+        
+        let (sut, store) = makeSUT()
+        
+        let exp = expectation(description: "Response")
+        _ = sut.loadImageData(from: anyURL(), completion: { result in
+            switch result {
+            case let .failure(loaderError as LocalFeedImageDataLoader.Error):
+                XCTAssertEqual(loaderError, .notFound)
+                
+            default:
+                XCTFail("Expected error, got \(result) instead")
+            }
+            
+            exp.fulfill()
+        })
+        
+        store.complete(with: nil)
+        
+        wait(for: [exp], timeout: 1.0)
     }
     
     //MARK: - Helpers
@@ -83,16 +119,23 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
     
     class LocalStoreSpy: FeedImageDataStore {
         
+        var completions = [(FeedImageDataStore.Result) -> Void]()
         var receivedMessages = [Message]()
         
         enum Message: Equatable {
             
-            case loadImage(URL)
+            case retrieve(URL)
         }
         
-        func retrieve(for url: URL) {
+        func retrieve(for url: URL, completion: @escaping (FeedImageDataStore.Result) -> Void) {
             
-            receivedMessages.append(.loadImage(url))
+            receivedMessages.append(.retrieve(url))
+            completions.append(completion)
+        }
+        
+        func complete(with data: Data?, at index: Int = 0) {
+            
+            completions[index](.success(data))
         }
     }
 }
