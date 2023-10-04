@@ -105,6 +105,18 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         }
     }
     
+    func test_loadImageData_deliversDataOnStoreData() {
+        
+        let (sut, store) = makeSUT()
+        
+        let imageData = Data("image data".utf8)
+        
+        expect(sut, result: .success(imageData)) {
+            
+            store.complete(with: imageData)
+        }
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT() -> (sut: LocalFeedImageDataLoader, store: LocalStoreSpy) {
