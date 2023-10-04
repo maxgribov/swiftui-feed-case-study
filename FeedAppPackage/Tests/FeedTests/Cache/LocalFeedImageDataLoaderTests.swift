@@ -33,17 +33,7 @@ final class LocalFeedImageDataLoader {
             
             task.complete(with: result
                 .mapError { _ in Error.failed }
-                .flatMap({ data in
-                
-                if let data = data {
-                    
-                    return .success(data)
-                    
-                } else {
-                    
-                    return .failure(Error.notFound)
-                }
-            }))
+                .flatMap({ data in data.map { .success($0) } ?? .failure(Error.notFound) }))
         }
         
         return task
@@ -113,7 +103,7 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         }
     }
     
-    func test_loadImageData_receivesNotFoundErrorOnStoreEmptyData() {
+    func test_loadImageData_deliversNotFoundErrorOnStoreEmptyData() {
         
         let (sut, store) = makeSUT()
         
@@ -128,7 +118,6 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         let (sut, store) = makeSUT()
         
         let imageData = Data("image data".utf8)
-        
         expect(sut, result: .success(imageData)) {
             
             store.complete(with: imageData)
@@ -150,7 +139,7 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         XCTAssertTrue(receivedResults.isEmpty)
     }
     
-    func test_loadImageData_doesNotDeliverResultOnSUTInstanceDeinit() {
+    func test_loadImageData_doesNotDeliverResultAfterSUTInstanceHasBeenDeallocated() {
         
         let store = LocalStoreSpy()
         var sut: LocalFeedImageDataLoader? = LocalFeedImageDataLoader(store: store)
@@ -159,9 +148,7 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         _ = sut?.loadImageData(from: anyURL()) { receivedResults.append($0) }
         sut = nil
         
-        store.complete(with: nil)
-        store.complete(with: Data("some data".utf8))
-        store.complete(with: anyNSError())
+        store.complete(with: anyData())
         
         XCTAssertTrue(receivedResults.isEmpty)
     }
