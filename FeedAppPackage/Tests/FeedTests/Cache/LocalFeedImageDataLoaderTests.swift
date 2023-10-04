@@ -8,11 +8,17 @@
 import XCTest
 import Feed
 
+protocol FeedImageDataStoreTask {
+    
+    func cancel()
+}
+
 protocol FeedImageDataStore {
     
     typealias Result = Swift.Result<Data?, Error>
     
-    func retrieve(for url: URL, completion: @escaping (Result) -> Void)
+    @discardableResult
+    func retrieve(for url: URL, completion: @escaping (Result) -> Void) -> FeedImageDataStoreTask
 }
 
 final class LocalFeedImageDataLoader {
@@ -26,7 +32,8 @@ final class LocalFeedImageDataLoader {
     
     func loadImageData(from url: URL, completion: @escaping (FeedImageDataLoader.Result) -> Void) -> FeedImageDataLoaderTask {
         
-        store.retrieve(for: url) { result in
+        let task = FeedImageDataLoaderTaskWrapper(completion: completion)
+        task.wrapped = store.retrieve(for: url) { result in
             
             completion(result.flatMap({ data in
                 
@@ -40,11 +47,32 @@ final class LocalFeedImageDataLoader {
                 }
             }))
         }
-        return Task()
+        
+        return task
     }
     
     enum Error: Swift.Error {
         case notFound
+    }
+    
+    class FeedImageDataLoaderTaskWrapper: FeedImageDataLoaderTask {
+        
+        var wrapped: FeedImageDataStoreTask?
+        var completion: ((FeedImageDataLoader.Result) -> Void)?
+        
+        init(completion: @escaping (FeedImageDataLoader.Result) -> Void) {
+            self.completion = completion
+        }
+        
+        func cancel() {
+            wrapped?.cancel()
+            completion = nil
+        }
+
+        func complete(with result: FeedImageDataLoader.Result) {
+            
+            completion?(result)
+        }
     }
     
     struct Task: FeedImageDataLoaderTask {
@@ -117,6 +145,32 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         }
     }
     
+    func test_cancelLoadImageData_messageStoreCancelRetrieveImage() {
+        
+        let (sut, store) = makeSUT()
+        
+        let url = anyURL()
+        let task = sut.loadImageData(from: url) { _ in }
+        task.cancel()
+        
+        XCTAssertEqual(store.receivedMessages, [.retrieve(url), .cancelRetrieve(url)])
+    }
+    
+//    func test_cancelLoadImageData_deliversNoResult() {
+//        
+//        let (sut, store) = makeSUT()
+//        
+//        var receivedResults = [FeedImageDataLoader.Result]()
+//        let task = sut.loadImageData(from: anyURL()) { receivedResults.append($0) }
+//        task.cancel()
+//        
+//        store.complete(with: nil)
+//        store.complete(with: Data("some data".utf8))
+//        store.complete(with: anyNSError())
+//        
+//        XCTAssertTrue(receivedResults.isEmpty)
+//    }
+    
     //MARK: - Helpers
     
     private func makeSUT() -> (sut: LocalFeedImageDataLoader, store: LocalStoreSpy) {
@@ -137,12 +191,18 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         enum Message: Equatable {
             
             case retrieve(URL)
+            case cancelRetrieve(URL)
         }
         
-        func retrieve(for url: URL, completion: @escaping (FeedImageDataStore.Result) -> Void) {
+        @discardableResult
+        func retrieve(for url: URL, completion: @escaping (FeedImageDataStore.Result) -> Void) -> FeedImageDataStoreTask {
             
             receivedMessages.append(.retrieve(url))
             completions.append(completion)
+            
+            return Task { [weak self] in
+                self?.receivedMessages.append(.cancelRetrieve(url))
+            }
         }
         
         func complete(with data: Data?, at index: Int = 0) {
@@ -153,6 +213,13 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         func complete(with error: Error, at index: Int = 0) {
             
             completions[index](.failure(error))
+        }
+        
+        struct Task: FeedImageDataStoreTask {
+            
+            let callback: () -> Void
+            
+            func cancel() { callback() }
         }
     }
     
