@@ -28,17 +28,17 @@ final class LocalFeedImageDataLoader {
         
         store.retrieve(for: url) { result in
             
-            switch result {
-            case let .success(data):
-                if let data = data {
-                    completion(.success(data))
-                } else {
-                    completion(.failure(Error.notFound))
-                }
+            completion(result.flatMap({ data in
                 
-            default:
-                break
-            }
+                if let data = data {
+                    
+                    return .success(data)
+                    
+                } else {
+                    
+                    return .failure(Error.notFound)
+                }
+            }))
         }
         return Task()
     }
@@ -105,6 +105,31 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         wait(for: [exp], timeout: 1.0)
     }
     
+    func test_loadImageData_deliversErrorOnStoreError() {
+        
+        let (sut, store) = makeSUT()
+        
+        let storeError = NSError(domain: "a store error", code: 0)
+        
+        let exp = expectation(description: "Response")
+        _ = sut.loadImageData(from: anyURL(), completion: { result in
+            
+            switch result {
+            case let .failure(nsError as NSError):
+                XCTAssertEqual(nsError, storeError)
+                
+            default:
+                XCTFail("Expected error, got \(result)")
+            }
+            
+            exp.fulfill()
+        })
+        
+        store.complete(with: storeError)
+        
+        wait(for: [exp], timeout: 1.0)
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT() -> (sut: LocalFeedImageDataLoader, store: LocalStoreSpy) {
@@ -136,6 +161,11 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         func complete(with data: Data?, at index: Int = 0) {
             
             completions[index](.success(data))
+        }
+        
+        func complete(with error: Error, at index: Int = 0) {
+            
+            completions[index](.failure(error))
         }
     }
 }
