@@ -8,8 +8,6 @@
 import XCTest
 import Feed
 
-
-
 final class LocalFeedImageDataLoaderTests: XCTestCase {
 
     func test_init_doesNotMessageStoreUponCreation() {
@@ -100,6 +98,18 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         XCTAssertTrue(receivedResults.isEmpty)
     }
     
+    func test_saveDataForURL_messageStoreInsertData() {
+        
+        let (sut, store) = makeSUT()
+        
+        let url = anyURL()
+        let data = anyData()
+        
+        sut.save(data, for: url) { _ in }
+        
+        XCTAssertEqual(store.receivedMessages, [.insert(data, url)])
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT() -> (sut: LocalFeedImageDataLoader, store: LocalStoreSpy) {
@@ -120,12 +130,18 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         enum Message: Equatable {
             
             case retrieve(URL)
+            case insert(Data, URL)
         }
         
         func retrieve(for url: URL, completion: @escaping (FeedImageDataStore.Result) -> Void){
             
             receivedMessages.append(.retrieve(url))
             completions.append(completion)
+        }
+        
+        func insert(data: Data, for url: URL, completion: @escaping (InsertResult) -> Void) {
+            
+            receivedMessages.append(.insert(data, url))
         }
         
         func complete(with data: Data?, at index: Int = 0) {
