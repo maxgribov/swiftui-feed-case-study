@@ -31,7 +31,9 @@ final class LocalFeedImageDataLoader {
             
             guard self != nil else { return}
             
-            task.complete(with: result.flatMap({ data in
+            task.complete(with: result
+                .mapError { _ in Error.failed }
+                .flatMap({ data in
                 
                 if let data = data {
                     
@@ -48,6 +50,7 @@ final class LocalFeedImageDataLoader {
     }
     
     enum Error: Swift.Error {
+        case failed
         case notFound
     }
     
@@ -100,6 +103,16 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         XCTAssertEqual(store.receivedMessages, [.retrieve(url), .retrieve(url)])
     }
     
+    func test_loadImageData_deliversErrorOnStoreError() {
+        
+        let (sut, store) = makeSUT()
+        
+        expect(sut, result: failure(.failed)) {
+            
+            store.complete(with: anyNSError())
+        }
+    }
+    
     func test_loadImageData_receivesNotFoundErrorOnStoreEmptyData() {
         
         let (sut, store) = makeSUT()
@@ -107,18 +120,6 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         expect(sut, result: failure(.notFound)) {
             
             store.complete(with: nil)
-        }
-    }
-    
-    func test_loadImageData_deliversErrorOnStoreError() {
-        
-        let (sut, store) = makeSUT()
-        
-        let storeError = NSError(domain: "a store error", code: 0)
-        
-        expect(sut, result: .failure(storeError)) {
-            
-            store.complete(with: storeError)
         }
     }
     
@@ -221,9 +222,6 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
                 
             case let (.failure(receivedError as LocalFeedImageDataLoader.Error), .failure(expectedError as LocalFeedImageDataLoader.Error)):
                 XCTAssertEqual(receivedError, expectedError, file: file, line: line)
-                
-            case let (.failure(receivedNSError as NSError), .failure(expectedNSError as NSError)):
-                XCTAssertEqual(receivedNSError, expectedNSError, file: file, line: line)
                 
             default:
                 XCTFail("Expected \(expectedResult), got \(receivedResult)", file: file, line: line)
