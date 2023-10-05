@@ -44,7 +44,7 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         
         expect(sut, result: failure(.failed)) {
             
-            store.complete(with: anyNSError())
+            store.completeRetrieval(with: anyNSError())
         }
     }
     
@@ -54,7 +54,7 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         
         expect(sut, result: failure(.notFound)) {
             
-            store.complete(with: nil)
+            store.completeRetrieval(with: nil)
         }
     }
     
@@ -65,7 +65,7 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         let imageData = Data("image data".utf8)
         expect(sut, result: .success(imageData)) {
             
-            store.complete(with: imageData)
+            store.completeRetrieval(with: imageData)
         }
     }
     
@@ -77,9 +77,9 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         let task = sut.loadImageData(from: anyURL()) { receivedResults.append($0) }
         task.cancel()
         
-        store.complete(with: nil)
-        store.complete(with: Data("some data".utf8))
-        store.complete(with: anyNSError())
+        store.completeRetrieval(with: nil)
+        store.completeRetrieval(with: Data("some data".utf8))
+        store.completeRetrieval(with: anyNSError())
         
         XCTAssertTrue(receivedResults.isEmpty)
     }
@@ -93,7 +93,7 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         _ = sut?.loadImageData(from: anyURL()) { receivedResults.append($0) }
         sut = nil
         
-        store.complete(with: anyData())
+        store.completeRetrieval(with: anyData())
         
         XCTAssertTrue(receivedResults.isEmpty)
     }
@@ -124,8 +124,8 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
     
     class LocalStoreSpy: FeedImageDataStore {
         
-        var completions = [(FeedImageDataStore.Result) -> Void]()
         var receivedMessages = [Message]()
+        var retrievalCompletions = [(FeedImageDataStore.RetrieveResult) -> Void]()
         
         enum Message: Equatable {
             
@@ -133,10 +133,10 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
             case insert(Data, URL)
         }
         
-        func retrieve(for url: URL, completion: @escaping (FeedImageDataStore.Result) -> Void){
+        func retrieve(for url: URL, completion: @escaping (FeedImageDataStore.RetrieveResult) -> Void){
             
             receivedMessages.append(.retrieve(url))
-            completions.append(completion)
+            retrievalCompletions.append(completion)
         }
         
         func insert(data: Data, for url: URL, completion: @escaping (InsertResult) -> Void) {
@@ -144,14 +144,14 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
             receivedMessages.append(.insert(data, url))
         }
         
-        func complete(with data: Data?, at index: Int = 0) {
+        func completeRetrieval(with data: Data?, at index: Int = 0) {
             
-            completions[index](.success(data))
+            retrievalCompletions[index](.success(data))
         }
         
-        func complete(with error: Error, at index: Int = 0) {
+        func completeRetrieval(with error: Error, at index: Int = 0) {
             
-            completions[index](.failure(error))
+            retrievalCompletions[index](.failure(error))
         }
     }
     
@@ -170,7 +170,7 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
             case let (.success(receivedData), .success(expectedData)):
                 XCTAssertEqual(receivedData, expectedData, file: file, line: line)
                 
-            case let (.failure(receivedError as LocalFeedImageDataLoader.Error), .failure(expectedError as LocalFeedImageDataLoader.Error)):
+            case let (.failure(receivedError as LocalFeedImageDataLoader.LoadError), .failure(expectedError as LocalFeedImageDataLoader.LoadError)):
                 XCTAssertEqual(receivedError, expectedError, file: file, line: line)
                 
             default:
@@ -185,7 +185,7 @@ final class LocalFeedImageDataLoaderTests: XCTestCase {
         wait(for: [exp], timeout: 1.0)
     }
     
-    private func failure(_ error: LocalFeedImageDataLoader.Error) -> FeedImageDataLoader.Result {
+    private func failure(_ error: LocalFeedImageDataLoader.LoadError) -> FeedImageDataLoader.Result {
         .failure(error)
     }
 }
