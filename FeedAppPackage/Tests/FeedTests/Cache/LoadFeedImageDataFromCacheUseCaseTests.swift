@@ -86,7 +86,7 @@ final class LoadFeedImageDataFromCacheUseCaseTests: XCTestCase {
     
     func test_loadImageData_doesNotDeliverResultAfterSUTInstanceHasBeenDeallocated() {
         
-        let store = LocalStoreSpy()
+        let store = FeedImageDataStoreSpy()
         var sut: LocalFeedImageDataLoader? = LocalFeedImageDataLoader(store: store)
         
         var receivedResults = [FeedImageDataLoader.Result]()
@@ -112,47 +112,14 @@ final class LoadFeedImageDataFromCacheUseCaseTests: XCTestCase {
     
     //MARK: - Helpers
     
-    private func makeSUT() -> (sut: LocalFeedImageDataLoader, store: LocalStoreSpy) {
+    private func makeSUT() -> (sut: LocalFeedImageDataLoader, store: FeedImageDataStoreSpy) {
         
-        let store = LocalStoreSpy()
+        let store = FeedImageDataStoreSpy()
         let sut = LocalFeedImageDataLoader(store: store)
         trackForMemoryLeaks(sut)
         trackForMemoryLeaks(store)
         
         return (sut, store)
-    }
-    
-    class LocalStoreSpy: FeedImageDataStore {
-        
-        var receivedMessages = [Message]()
-        var retrievalCompletions = [(FeedImageDataStore.RetrieveResult) -> Void]()
-        
-        enum Message: Equatable {
-            
-            case retrieve(URL)
-            case insert(Data, URL)
-        }
-        
-        func retrieve(for url: URL, completion: @escaping (FeedImageDataStore.RetrieveResult) -> Void){
-            
-            receivedMessages.append(.retrieve(url))
-            retrievalCompletions.append(completion)
-        }
-        
-        func insert(data: Data, for url: URL, completion: @escaping (InsertResult) -> Void) {
-            
-            receivedMessages.append(.insert(data, url))
-        }
-        
-        func completeRetrieval(with data: Data?, at index: Int = 0) {
-            
-            retrievalCompletions[index](.success(data))
-        }
-        
-        func completeRetrieval(with error: Error, at index: Int = 0) {
-            
-            retrievalCompletions[index](.failure(error))
-        }
     }
     
     private func expect(
