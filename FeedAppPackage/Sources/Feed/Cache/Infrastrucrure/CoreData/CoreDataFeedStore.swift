@@ -75,19 +75,15 @@ extension CoreDataFeedStore: FeedImageDataStore {
     public func insert(data: Data, for url: URL, completion: @escaping (InsertResult) -> Void) {
         
         perform { context in
-
-            do {
+            
+            completion(Result {
                 
-                let cache = try ManagedCache.find(in: context)
-                let image = cache?.feed.compactMap { $0 as? ManagedFeedImage }.first(where: { $0.url == url })
+                let image = try ManagedFeedImage.image(for: url, in: context)
                 image?.data = data
                 try context.save()
-                completion(.success(()))
                 
-            } catch {
-                
-                completion(.failure(error))
-            }
+                return ()
+            })
         }
     }
     
@@ -95,19 +91,11 @@ extension CoreDataFeedStore: FeedImageDataStore {
         
         perform { context in
             
-            do {
-                
-                let cache = try ManagedCache.find(in: context)
-                let image = cache?.feed.compactMap { $0 as? ManagedFeedImage }.first(where: { $0.url == url })
-                completion(.success(image?.data))
-                
-            } catch {
-                
-                completion(.failure(error))
-            }
+            completion(Result {
+                try ManagedFeedImage.image(for: url, in: context)?.data
+            })
         }
     }
-    
 }
 
 
