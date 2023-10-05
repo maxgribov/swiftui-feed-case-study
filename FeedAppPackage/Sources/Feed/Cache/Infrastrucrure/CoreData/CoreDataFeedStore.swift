@@ -81,8 +81,6 @@ extension CoreDataFeedStore: FeedImageDataStore {
                 let image = try ManagedFeedImage.image(for: url, in: context)
                 image?.data = data
                 try context.save()
-                
-                return ()
             })
         }
     }
