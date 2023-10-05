@@ -7,6 +7,8 @@
 
 import CoreData
 
+//MARK: - FeedStore
+
 public final class CoreDataFeedStore: FeedStore {
     
     private let container: NSPersistentContainer
@@ -58,7 +60,7 @@ public final class CoreDataFeedStore: FeedStore {
         }
     }
     
-    private func perform(_ action: @escaping (NSManagedObjectContext) -> Void) {
+    func perform(_ action: @escaping (NSManagedObjectContext) -> Void) {
         
         context.perform { [context] in
             action(context)
@@ -66,6 +68,46 @@ public final class CoreDataFeedStore: FeedStore {
     }
 }
 
+//MARK: - FeedImageDataStore
 
+extension CoreDataFeedStore: FeedImageDataStore {
+    
+    public func insert(data: Data, for url: URL, completion: @escaping (InsertResult) -> Void) {
+        
+        perform { context in
+
+            do {
+                
+                let cache = try ManagedCache.find(in: context)
+                let image = cache?.feed.compactMap { $0 as? ManagedFeedImage }.first(where: { $0.url == url })
+                image?.data = data
+                try context.save()
+                completion(.success(()))
+                
+            } catch {
+                
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    public func retrieve(for url: URL, completion: @escaping (FeedImageDataStore.RetrieveResult) -> Void) {
+        
+        perform { context in
+            
+            do {
+                
+                let cache = try ManagedCache.find(in: context)
+                let image = cache?.feed.compactMap { $0 as? ManagedFeedImage }.first(where: { $0.url == url })
+                completion(.success(image?.data))
+                
+            } catch {
+                
+                completion(.failure(error))
+            }
+        }
+    }
+    
+}
 
 
