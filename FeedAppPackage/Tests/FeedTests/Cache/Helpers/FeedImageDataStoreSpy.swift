@@ -11,7 +11,6 @@ import Feed
 class FeedImageDataStoreSpy: FeedImageDataStore {
     
     var receivedMessages = [Message]()
-    var retrievalCompletions = [(FeedImageDataStore.RetrieveResult) -> Void]()
     
     enum Message: Equatable {
         
@@ -19,15 +18,14 @@ class FeedImageDataStoreSpy: FeedImageDataStore {
         case insert(Data, URL)
     }
     
-    func retrieve(for url: URL, completion: @escaping (FeedImageDataStore.RetrieveResult) -> Void){
+    //MARK: - Retrieval
+    
+    var retrievalCompletions = [(RetrieveResult) -> Void]()
+    
+    func retrieve(for url: URL, completion: @escaping (RetrieveResult) -> Void){
         
         receivedMessages.append(.retrieve(url))
         retrievalCompletions.append(completion)
-    }
-    
-    func insert(data: Data, for url: URL, completion: @escaping (InsertResult) -> Void) {
-        
-        receivedMessages.append(.insert(data, url))
     }
     
     func completeRetrieval(with data: Data?, at index: Int = 0) {
@@ -38,5 +36,20 @@ class FeedImageDataStoreSpy: FeedImageDataStore {
     func completeRetrieval(with error: Error, at index: Int = 0) {
         
         retrievalCompletions[index](.failure(error))
+    }
+    
+    //MARK: - Insertion
+    
+    var insertionCompletions = [(InsertResult) -> Void]()
+    
+    func insert(data: Data, for url: URL, completion: @escaping (InsertResult) -> Void) {
+        
+        receivedMessages.append(.insert(data, url))
+        insertionCompletions.append(completion)
+    }
+    
+    func completeInsertion(with error: Error, at index: Int = 0) {
+        
+        insertionCompletions[index](.failure(error))
     }
 }

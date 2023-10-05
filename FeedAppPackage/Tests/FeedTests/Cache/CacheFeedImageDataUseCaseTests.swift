@@ -29,6 +29,16 @@ final class CacheFeedImageDataUseCaseTests: XCTestCase {
         XCTAssertEqual(store.receivedMessages, [.insert(data, url)])
     }
     
+    func test_saveDataForURL_failsOnStoreError() {
+        
+        let (sut, store) = makeSUT()
+        
+        expect(sut, result: failure(.failed)) {
+            
+            store.completeInsertion(with: anyNSError())
+        }
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT() -> (sut: LocalFeedImageDataLoader, store: FeedImageDataStoreSpy) {
@@ -41,5 +51,38 @@ final class CacheFeedImageDataUseCaseTests: XCTestCase {
         return (sut, store)
     }
     
-
+    private func failure(_ error: LocalFeedImageDataLoader.SaveError) -> LocalFeedImageDataLoader.SaveResult {
+        
+        .failure(error)
+    }
+    
+    private func expect(
+        _ sut: LocalFeedImageDataLoader,
+        result expectedResult: LocalFeedImageDataLoader.SaveResult,
+        for action: () -> Void,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        
+        let exp = expectation(description: "Response")
+        sut.save(anyData(), for: anyURL()) { receivedResult in
+            
+            switch (receivedResult, expectedResult) {
+            case (.success, .success):
+                break
+                
+            case let (.failure(receivedError as LocalFeedImageDataLoader.SaveError), .failure(expectedError as LocalFeedImageDataLoader.SaveError)):
+                XCTAssertEqual(receivedError, expectedError, file: file, line: line)
+                
+            default:
+                XCTFail("Expected result \(expectedResult), got \(receivedResult) instead", file: file, line: line)
+            }
+            
+            exp.fulfill()
+        }
+        
+        action()
+        
+        wait(for: [exp], timeout: 1.0)
+    }
 }
