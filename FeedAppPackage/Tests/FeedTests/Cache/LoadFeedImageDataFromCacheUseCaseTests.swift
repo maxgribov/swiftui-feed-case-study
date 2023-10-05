@@ -1,6 +1,6 @@
 //
-//  LocalFeedImageDataLoaderTests.swift
-//  
+//  LoadFeedImageDataFromCacheUseCaseTests.swift
+//
 //
 //  Created by Max Gribov on 03.10.2023.
 //
@@ -8,7 +8,7 @@
 import XCTest
 import Feed
 
-final class LocalFeedImageDataLoaderTests: XCTestCase {
+final class LoadFeedImageDataFromCacheUseCaseTests: XCTestCase {
 
     func test_init_doesNotMessageStoreUponCreation() {
         
