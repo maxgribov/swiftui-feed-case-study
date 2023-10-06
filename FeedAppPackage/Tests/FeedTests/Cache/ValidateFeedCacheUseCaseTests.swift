@@ -21,7 +21,7 @@ final class ValidateFeedCacheUseCaseTests: XCTestCase {
         
         let (sut, store) = makeSUT()
         
-        sut.validateCahe()
+        sut.validateCache()
         store.completeRetrieval(with: anyNSError())
         
         XCTAssertEqual(store.receivedMessages, [.retrieve, .deleteCachedFeed])
@@ -31,7 +31,7 @@ final class ValidateFeedCacheUseCaseTests: XCTestCase {
         
         let (sut, store) = makeSUT()
         
-        sut.validateCahe()
+        sut.validateCache()
         store.completeRetrievalWithEmptyCache()
         
         XCTAssertEqual(store.receivedMessages, [.retrieve])
@@ -45,7 +45,7 @@ final class ValidateFeedCacheUseCaseTests: XCTestCase {
         
         let nonExpiredTimestamp = fixedCurrentDate.minusFeedCacheMaxAge().adding(seconds: 1)
         
-        sut.validateCahe()
+        sut.validateCache()
         store.completeRetrieval(with: feed.local, timestamp: nonExpiredTimestamp)
         
         XCTAssertEqual(store.receivedMessages, [.retrieve])
@@ -59,7 +59,7 @@ final class ValidateFeedCacheUseCaseTests: XCTestCase {
         
         let expirationTimestamp = fixedCurrentDate.minusFeedCacheMaxAge()
         
-        sut.validateCahe()
+        sut.validateCache()
         store.completeRetrieval(with: feed.local, timestamp: expirationTimestamp)
         
         XCTAssertEqual(store.receivedMessages, [.retrieve, .deleteCachedFeed])
@@ -73,7 +73,7 @@ final class ValidateFeedCacheUseCaseTests: XCTestCase {
         
         let expiredTimestamp = fixedCurrentDate.minusFeedCacheMaxAge().adding(seconds: -1)
         
-        sut.validateCahe()
+        sut.validateCache()
         store.completeRetrieval(with: feed.local, timestamp: expiredTimestamp)
         
         XCTAssertEqual(store.receivedMessages, [.retrieve, .deleteCachedFeed])
@@ -84,7 +84,7 @@ final class ValidateFeedCacheUseCaseTests: XCTestCase {
         let store = FeedStoreSpy()
         var sut: LocalFeedLoader? = LocalFeedLoader(store: store, currentDate: Date.init)
         
-        sut?.validateCahe()
+        sut?.validateCache()
         
         sut = nil
         store.completeRetrieval(with: anyNSError())
