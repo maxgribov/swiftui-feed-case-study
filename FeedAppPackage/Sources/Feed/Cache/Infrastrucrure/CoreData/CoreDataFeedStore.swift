@@ -78,9 +78,9 @@ extension CoreDataFeedStore: FeedImageDataStore {
             
             completion(Result {
                 
-                let image = try ManagedFeedImage.image(for: url, in: context)
-                image?.data = data
-                try context.save()
+                try ManagedFeedImage.image(for: url, in: context)
+                    .map { $0.data = data }
+                    .map(context.save)
             })
         }
     }
@@ -90,6 +90,7 @@ extension CoreDataFeedStore: FeedImageDataStore {
         perform { context in
             
             completion(Result {
+                
                 try ManagedFeedImage.image(for: url, in: context)?.data
             })
         }
