@@ -76,12 +76,9 @@ final class CoreDataFeedImageDataStoreTests: XCTestCase {
     //MARK: - Helpers
     
     func makeSUT() -> CoreDataFeedStore {
-        
-        let baseBundle = Bundle(for: CoreDataFeedStore.self)
-        let packageBundleURL = baseBundle.resourceURL!.appending(component: "FeedAppPackage_Feed.bundle")
-        let packageBundle = Bundle(url: packageBundleURL)!
+
         let storeURL = URL(fileURLWithPath: "/dev/null")
-        let sut = try! CoreDataFeedStore(storeURL: storeURL, bundle: packageBundle)
+        let sut = try! CoreDataFeedStore(storeURL: storeURL)
         trackForMemoryLeaks(sut)
         
         return sut
