@@ -11,15 +11,40 @@ import Feed
 final class FeedImageDataLoaderWithFallbackComposite: FeedImageDataLoader {
     
     private let primary: FeedImageDataLoader
+    private let fallback: FeedImageDataLoader
     
     init(primary: FeedImageDataLoader, fallback: FeedImageDataLoader) {
         
         self.primary = primary
+        self.fallback = fallback
     }
     
     func loadImageData(from url: URL, completion: @escaping (FeedImageDataLoader.Result) -> Void) -> FeedImageDataLoaderTask {
         
-        primary.loadImageData(from: url, completion: completion)
+        let task = FeedImageDataLoaderTaskWrapper()
+        task.wrapped = primary.loadImageData(from: url) { [fallback] result in
+            
+            if let data = try? result.get() {
+                
+                completion(.success(data))
+                
+            } else {
+                
+                task.wrapped = fallback.loadImageData(from: url, completion: completion)
+            }
+        }
+        
+        return task
+    }
+    
+    private final class FeedImageDataLoaderTaskWrapper: FeedImageDataLoaderTask {
+        
+        var wrapped: FeedImageDataLoaderTask?
+        
+        func cancel() {
+            
+            wrapped?.cancel()
+        }
     }
 }
 
@@ -31,6 +56,14 @@ final class FeedImageDataLoaderWithFallbackCompositeTests: XCTestCase {
         let sut = makeSUT(primaryResult: .success(primaryData), fallbackResult: .success(anyData()))
         
         expect(sut, toCompleteWith: .success(primaryData))
+    }
+    
+    func test_load_deliversFallbackImageDataOnPrimaryLoaderFailure() {
+        
+        let fallbackData = Data("fallback".utf8)
+        let sut = makeSUT(primaryResult: .failure(anyNSError()), fallbackResult: .success(fallbackData))
+        
+        expect(sut, toCompleteWith: .success(fallbackData))
     }
 
     //MARK: - Helpers
@@ -98,15 +131,5 @@ final class FeedImageDataLoaderWithFallbackCompositeTests: XCTestCase {
         }
         
         wait(for: [exp], timeout: 1.0)
-    }
-    
-    private func anyData() -> Data {
-        
-        Data("any data".utf8)
-    }
-    
-    private func anyURL() -> URL {
-        
-        URL(string: "https://any-url.com")!
     }
 }
