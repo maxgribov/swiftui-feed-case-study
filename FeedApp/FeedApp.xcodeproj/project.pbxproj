@@ -11,7 +11,9 @@
 		77052FB92A1FF0D600B5D0C4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77052FB82A1FF0D600B5D0C4 /* ContentView.swift */; };
 		77052FBB2A1FF0D700B5D0C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 77052FBA2A1FF0D700B5D0C4 /* Assets.xcassets */; };
 		77052FBE2A1FF0D700B5D0C4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 77052FBD2A1FF0D700B5D0C4 /* Preview Assets.xcassets */; };
-		77052FC82A1FF0D700B5D0C4 /* FeedAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77052FC72A1FF0D700B5D0C4 /* FeedAppTests.swift */; };
+		77A958332AD404E500BA50F2 /* FeedLoaderWithFallbackCompositeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77A958322AD404E500BA50F2 /* FeedLoaderWithFallbackCompositeTests.swift */; };
+		77A958352AD407D700BA50F2 /* Feed in Frameworks */ = {isa = PBXBuildFile; productRef = 77A958342AD407D700BA50F2 /* Feed */; };
+		77A958372AD407D700BA50F2 /* FeedIOS in Frameworks */ = {isa = PBXBuildFile; productRef = 77A958362AD407D700BA50F2 /* FeedIOS */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,8 +33,8 @@
 		77052FBA2A1FF0D700B5D0C4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		77052FBD2A1FF0D700B5D0C4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		77052FC32A1FF0D700B5D0C4 /* FeedAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FeedAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		77052FC72A1FF0D700B5D0C4 /* FeedAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAppTests.swift; sourceTree = "<group>"; };
 		77052FE12A1FF17E00B5D0C4 /* FeedAppPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = FeedAppPackage; path = ../FeedAppPackage; sourceTree = "<group>"; };
+		77A958322AD404E500BA50F2 /* FeedLoaderWithFallbackCompositeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedLoaderWithFallbackCompositeTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,6 +42,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				77A958372AD407D700BA50F2 /* FeedIOS in Frameworks */,
+				77A958352AD407D700BA50F2 /* Feed in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,7 +99,7 @@
 		77052FC62A1FF0D700B5D0C4 /* FeedAppTests */ = {
 			isa = PBXGroup;
 			children = (
-				77052FC72A1FF0D700B5D0C4 /* FeedAppTests.swift */,
+				77A958322AD404E500BA50F2 /* FeedLoaderWithFallbackCompositeTests.swift */,
 			);
 			path = FeedAppTests;
 			sourceTree = "<group>";
@@ -132,6 +136,8 @@
 			);
 			name = FeedApp;
 			packageProductDependencies = (
+				77A958342AD407D700BA50F2 /* Feed */,
+				77A958362AD407D700BA50F2 /* FeedIOS */,
 			);
 			productName = FeedApp;
 			productReference = 77052FB32A1FF0D600B5D0C4 /* FeedApp.app */;
@@ -170,6 +176,7 @@
 					};
 					77052FC22A1FF0D700B5D0C4 = {
 						CreatedOnToolsVersion = 14.3;
+						LastSwiftMigration = 1500;
 						TestTargetID = 77052FB22A1FF0D600B5D0C4;
 					};
 				};
@@ -226,7 +233,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				77052FC82A1FF0D700B5D0C4 /* FeedAppTests.swift in Sources */,
+				77A958332AD404E500BA50F2 /* FeedLoaderWithFallbackCompositeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -418,6 +425,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 29E66XW7ZX;
@@ -427,6 +435,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = pro.maxgribov.FeedAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FeedApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FeedApp";
@@ -438,6 +447,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 29E66XW7ZX;
@@ -484,6 +494,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		77A958342AD407D700BA50F2 /* Feed */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Feed;
+		};
+		77A958362AD407D700BA50F2 /* FeedIOS */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeedIOS;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 77052FAB2A1FF0D600B5D0C4 /* Project object */;
 }
