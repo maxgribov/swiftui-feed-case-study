@@ -16,6 +16,7 @@
 		77A958372AD407D700BA50F2 /* FeedIOS in Frameworks */ = {isa = PBXBuildFile; productRef = 77A958362AD407D700BA50F2 /* FeedIOS */; };
 		77A9583A2AD4099B00BA50F2 /* XCTestCase+MemoryLeaking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77A958392AD4099B00BA50F2 /* XCTestCase+MemoryLeaking.swift */; };
 		77A9583C2AD419A600BA50F2 /* FeedLoaderWithFallbackComposite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77A9583B2AD419A600BA50F2 /* FeedLoaderWithFallbackComposite.swift */; };
+		77A9583E2AD41B5300BA50F2 /* FeedImageDataLoaderWithFallbackCompositeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77A9583D2AD41B5300BA50F2 /* FeedImageDataLoaderWithFallbackCompositeTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +40,7 @@
 		77A958322AD404E500BA50F2 /* FeedLoaderWithFallbackCompositeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedLoaderWithFallbackCompositeTests.swift; sourceTree = "<group>"; };
 		77A958392AD4099B00BA50F2 /* XCTestCase+MemoryLeaking.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "XCTestCase+MemoryLeaking.swift"; sourceTree = "<group>"; };
 		77A9583B2AD419A600BA50F2 /* FeedLoaderWithFallbackComposite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedLoaderWithFallbackComposite.swift; sourceTree = "<group>"; };
+		77A9583D2AD41B5300BA50F2 /* FeedImageDataLoaderWithFallbackCompositeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedImageDataLoaderWithFallbackCompositeTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +131,7 @@
 			isa = PBXGroup;
 			children = (
 				77A958392AD4099B00BA50F2 /* XCTestCase+MemoryLeaking.swift */,
+				77A9583D2AD41B5300BA50F2 /* FeedImageDataLoaderWithFallbackCompositeTests.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -250,6 +253,7 @@
 			files = (
 				77A958332AD404E500BA50F2 /* FeedLoaderWithFallbackCompositeTests.swift in Sources */,
 				77A9583A2AD4099B00BA50F2 /* XCTestCase+MemoryLeaking.swift in Sources */,
+				77A9583E2AD41B5300BA50F2 /* FeedImageDataLoaderWithFallbackCompositeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
