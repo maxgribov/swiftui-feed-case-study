@@ -13,18 +13,20 @@ protocol FeedImageDataCache {
     typealias Result = Swift.Result<Void, Swift.Error>
     
     func save(_ data: Data, for url: URL, completion: @escaping (Result) -> Void)
-    
 }
 
 final class FeedImageDataLoaderCacheDecorator: FeedImageDataLoader {
     
+    private let loader: FeedImageDataLoader
+    
     init(loader: FeedImageDataLoader, cache: FeedImageDataCache) {
         
+        self.loader = loader
     }
     
     func loadImageData(from url: URL, completion: @escaping (FeedImageDataLoader.Result) -> Void) -> FeedImageDataLoaderTask {
         
-        return Task()
+        return loader.loadImageData(from: url, completion: completion)
     }
     
     private struct Task: FeedImageDataLoaderTask {
@@ -43,6 +45,17 @@ final class FeedImageDataLoaderCacheDecoratorTests: XCTestCase, FeedImageDataLoa
         
         XCTAssertTrue(loader.messages.isEmpty)
         XCTAssertTrue(cache.messages.isEmpty)
+    }
+    
+    func test_load_deliversImageDataOnLoaderSuccess() {
+        
+        let (sut, loader, _) = makeSUT()
+        
+        let imageData = Data("image data".utf8)
+        expect(sut, toCompleteWith: .success(imageData), on: {
+            
+            loader.complete(with: imageData)
+        })
     }
     
     //MARK: - Helpers
