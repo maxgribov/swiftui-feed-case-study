@@ -7,39 +7,7 @@
 
 import XCTest
 import Feed
-
-final class FeedLoaderCacheDecorator: FeedLoader {
-    
-    private let loader: FeedLoader
-    private let cache: FeedCache
-    
-    init(loader: FeedLoader, cache: FeedCache) {
-    
-        self.loader = loader
-        self.cache = cache
-    }
-    
-    func load(completion: @escaping (FeedLoader.Result) -> Void) {
-        
-        loader.load { [loader, cache] result in
-            
-            if let feed = try? result.get() {
-                
-                cache.saveIgnoringCompletion(feed)
-            }
-            
-            loader.load(completion: completion)
-        }
-    }
-}
-
-extension FeedCache {
-    
-    func saveIgnoringCompletion(_ items: [FeedImage]) {
-        
-        save(items) { _ in }
-    }
-}
+import FeedApp
 
 final class FeedLoaderCacheDecoratorTests: XCTestCase, FeedLoaderTest {
 
