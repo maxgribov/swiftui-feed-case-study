@@ -32,11 +32,19 @@ final class FeedLoaderCacheDecorator: FeedLoader {
             
             if let feed = try? result.get() {
                 
-                cache.save(feed) { _ in }
+                cache.saveIgnoringCompletion(feed)
             }
             
             loader.load(completion: completion)
         }
+    }
+}
+
+extension FeedCache {
+    
+    func saveIgnoringCompletion(_ items: [FeedImage]) {
+        
+        save(items) { _ in }
     }
 }
 
@@ -67,6 +75,16 @@ final class FeedLoaderCacheDecoratorTests: XCTestCase, FeedLoaderTest {
         sut.load { _ in }
         
         XCTAssertEqual(cache.messages, [.save(feed)])
+    }
+    
+    func test_load_doesNotMessageCacheOnFeedLoaderFailure() {
+        
+        let cache = FeedCacheSpy()
+        let sut = makeSUT(loaderResult: .failure(anyNSError()), cache: cache)
+        
+        sut.load { _ in }
+        
+        XCTAssertTrue(cache.messages.isEmpty)
     }
     
     //MARK: - Helpers
