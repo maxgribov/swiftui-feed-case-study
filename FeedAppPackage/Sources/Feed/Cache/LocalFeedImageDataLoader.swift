@@ -17,10 +17,9 @@ public final class LocalFeedImageDataLoader {
     }
 }
 
-extension LocalFeedImageDataLoader {
+extension LocalFeedImageDataLoader: FeedImageDataCache {
 
-    
-    public typealias SaveResult = Result<Void, Swift.Error>
+    public typealias SaveResult = FeedImageDataCache.Result
     
     public func save(_ data: Data, for url: URL, completion: @escaping (SaveResult) -> Void) {
         

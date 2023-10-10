@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  FeedCache.swift
+//
 //
 //  Created by Max Gribov on 10.10.2023.
 //
