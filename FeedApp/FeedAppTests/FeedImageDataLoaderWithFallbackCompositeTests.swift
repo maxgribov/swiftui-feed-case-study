@@ -94,6 +94,19 @@ final class FeedImageDataLoaderWithFallbackCompositeTests: XCTestCase {
         XCTAssertTrue(fallbackLoader.cancelledURLs.isEmpty)
     }
     
+    func test_cancelTask_cancelsFallbackLoaderTaskOnPrimaryLoaderFailure() {
+        
+        let (sut, primaryLoader, fallbackLoader) = makeSUT()
+        
+        let url = anyURL()
+        let task = sut.loadImageData(from: url) { _ in }
+        primaryLoader.complete(with: anyNSError())
+        task.cancel()
+        
+        XCTAssertTrue(primaryLoader.cancelledURLs.isEmpty)
+        XCTAssertEqual(fallbackLoader.cancelledURLs, [url])
+    }
+    
     func test_load_deliversPrimaryImageDataOnPrimaryLoaderSuccess() {
         
         let primaryData = Data("primary".utf8)
