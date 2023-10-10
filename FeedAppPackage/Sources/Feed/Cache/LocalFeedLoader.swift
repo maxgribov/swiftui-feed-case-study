@@ -19,9 +19,9 @@ public final class LocalFeedLoader {
     }
 }
 
-extension LocalFeedLoader {
+extension LocalFeedLoader: FeedCache {
     
-    public typealias SaveResult = Result<Void, Error>
+    public typealias SaveResult = FeedCache.Result
     
     public func save(_ items: [FeedImage], completion: @escaping (SaveResult) -> Void) {
         
