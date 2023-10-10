@@ -58,11 +58,6 @@ final class FeedLoaderCacheDecoratorTests: XCTestCase {
         return sut
     }
     
-    private func uniqueFeed() -> [FeedImage] {
-        
-        [FeedImage(id: UUID(), description: "a description", location: "a location", url: URL(string: "https://a-url.com")!)]
-    }
-
     private func expect(
         _ sut: FeedLoader,
         result expectedResult: FeedLoader.Result,
