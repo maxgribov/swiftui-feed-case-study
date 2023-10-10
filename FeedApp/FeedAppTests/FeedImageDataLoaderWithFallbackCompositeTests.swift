@@ -109,12 +109,12 @@ final class FeedImageDataLoaderWithFallbackCompositeTests: XCTestCase {
         line: UInt = #line
     ) -> (
         sut: FeedImageDataLoaderWithFallbackComposite,
-        primaryLoader: FeedImageLoaderSpy,
-        fallbackLoader: FeedImageLoaderSpy
+        primaryLoader: FeedImageDataLoaderSpy,
+        fallbackLoader: FeedImageDataLoaderSpy
     ) {
         
-        let primaryLoader = FeedImageLoaderSpy()
-        let fallbackLoader = FeedImageLoaderSpy()
+        let primaryLoader = FeedImageDataLoaderSpy()
+        let fallbackLoader = FeedImageDataLoaderSpy()
         let sut = FeedImageDataLoaderWithFallbackComposite(primary: primaryLoader, fallback: fallbackLoader)
         
         trackForMemoryLeaks(primaryLoader, file: file, line: line)
@@ -123,42 +123,7 @@ final class FeedImageDataLoaderWithFallbackCompositeTests: XCTestCase {
         
         return (sut, primaryLoader, fallbackLoader)
     }
-    
-    private class FeedImageLoaderSpy: FeedImageDataLoader {
-        
-        private(set) var messages = [(url: URL, completion: (FeedImageDataLoader.Result) -> Void)]()
-        var loadedURLs: [URL] {
-            messages.map { $0.url }
-        }
-        private(set) var cancelledURLs = [URL]()
-        
-        func loadImageData(from url: URL, completion: @escaping (FeedImageDataLoader.Result) -> Void) -> FeedImageDataLoaderTask {
-            
-            messages.append((url, completion))
-            return Task { [weak self] in
-                    
-                self?.cancelledURLs.append(url)
-            }
-        }
-        
-        struct Task: FeedImageDataLoaderTask {
-            
-            let callback: () -> Void
-            
-            func cancel() { callback() }
-        }
-        
-        func complete(with error: Error, at index: Int = 0) {
-            
-            messages[index].completion(.failure(error))
-        }
-        
-        func complete(with data: Data, at index: Int = 0) {
-            
-            messages[index].completion(.success(data))
-        }
-    }
-    
+
     private func expect(
         _ sut: FeedImageDataLoader,
         toCompleteWith expectedResult: FeedImageDataLoader.Result,
