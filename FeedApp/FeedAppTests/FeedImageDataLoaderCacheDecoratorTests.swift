@@ -39,9 +39,7 @@ final class FeedImageDataLoaderCacheDecoratorTests: XCTestCase, FeedImageDataLoa
 
     func test_init_doesNotStartLoadingOrSave() {
         
-        let loader = FeedImageDataLoaderSpy()
-        let cache = FeedImageDataCacheSpy()
-        let sut = FeedImageDataLoaderCacheDecorator(loader: loader, cache: cache)
+        let (_ , loader, cache) = makeSUT()
         
         XCTAssertTrue(loader.messages.isEmpty)
         XCTAssertTrue(cache.messages.isEmpty)
@@ -49,7 +47,25 @@ final class FeedImageDataLoaderCacheDecoratorTests: XCTestCase, FeedImageDataLoa
     
     //MARK: - Helpers
     
-    
+    private func makeSUT(
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> (
+        sut: FeedImageDataLoader,
+        loader: FeedImageDataLoaderSpy,
+        cache: FeedImageDataCacheSpy
+    ) {
+        
+        let loader = FeedImageDataLoaderSpy()
+        let cache = FeedImageDataCacheSpy()
+        let sut = FeedImageDataLoaderCacheDecorator(loader: loader, cache: cache)
+        
+        trackForMemoryLeaks(loader)
+        trackForMemoryLeaks(cache)
+        trackForMemoryLeaks(sut)
+        
+        return (sut, loader, cache)
+    }
     
     private class FeedImageDataCacheSpy: FeedImageDataCache {
         
