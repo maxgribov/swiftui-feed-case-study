@@ -49,6 +49,16 @@ final class FeedImageDataLoaderWithFallbackComposite: FeedImageDataLoader {
 }
 
 final class FeedImageDataLoaderWithFallbackCompositeTests: XCTestCase {
+    
+    func test_init_doesNotAttemptToLoadPrimaryOrFallbackData() {
+        
+        let primaryLoader = FeedImageLoaderSpy()
+        let fallbackLoader = FeedImageLoaderSpy()
+        let sut = FeedImageDataLoaderWithFallbackComposite(primary: primaryLoader, fallback: fallbackLoader)
+        
+        XCTAssertTrue(primaryLoader.loadImageAttempts.isEmpty)
+        XCTAssertTrue(fallbackLoader.loadImageAttempts.isEmpty)
+    }
 
     func test_load_deliversPrimaryImageDataOnPrimaryLoaderSuccess() {
         
@@ -92,6 +102,24 @@ final class FeedImageDataLoaderWithFallbackCompositeTests: XCTestCase {
         trackForMemoryLeaks(sut, file: file, line: line)
         
         return sut
+    }
+    
+    private class FeedImageLoaderSpy: FeedImageDataLoader {
+        
+        private(set) var loadImageAttempts = [(URL, (FeedImageDataLoader.Result) -> Void)]()
+        
+        func loadImageData(from url: URL, completion: @escaping (FeedImageDataLoader.Result) -> Void) -> FeedImageDataLoaderTask {
+            
+            loadImageAttempts.append((url, completion))
+            return Task()
+        }
+        
+        struct Task: FeedImageDataLoaderTask {
+            
+            func cancel() {
+                
+            }
+        }
     }
     
     private class ImageDataLoaderStub: FeedImageDataLoader {
