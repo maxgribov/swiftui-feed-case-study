@@ -28,13 +28,6 @@ final class FeedImageDataLoaderCacheDecorator: FeedImageDataLoader {
         
         return loader.loadImageData(from: url, completion: completion)
     }
-    
-    private struct Task: FeedImageDataLoaderTask {
-        
-        func cancel() {
-            
-        }
-    }
 }
 
 final class FeedImageDataLoaderCacheDecoratorTests: XCTestCase, FeedImageDataLoaderTest {
@@ -67,6 +60,17 @@ final class FeedImageDataLoaderCacheDecoratorTests: XCTestCase, FeedImageDataLoa
             
             loader.complete(with: error)
         })
+    }
+    
+    func test_cancelTask_cancelsLoaderTask() {
+        
+        let (sut, loader, _) = makeSUT()
+        
+        let url = anyURL()
+        let task = sut.loadImageData(from: url) { _ in }
+        task.cancel()
+        
+        XCTAssertEqual(loader.cancelledURLs, [url])
     }
     
     //MARK: - Helpers
