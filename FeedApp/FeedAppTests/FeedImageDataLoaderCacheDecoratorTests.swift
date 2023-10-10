@@ -18,15 +18,25 @@ protocol FeedImageDataCache {
 final class FeedImageDataLoaderCacheDecorator: FeedImageDataLoader {
     
     private let loader: FeedImageDataLoader
+    private let cache: FeedImageDataCache
     
     init(loader: FeedImageDataLoader, cache: FeedImageDataCache) {
         
         self.loader = loader
+        self.cache = cache
     }
     
     func loadImageData(from url: URL, completion: @escaping (FeedImageDataLoader.Result) -> Void) -> FeedImageDataLoaderTask {
         
-        return loader.loadImageData(from: url, completion: completion)
+        return loader.loadImageData(from: url) { [cache] result in
+
+            if let data = try? result.get() {
+                
+                cache.save(data, for: url) { _ in }
+            }
+            
+            completion(result)
+        }
     }
 }
 
@@ -73,6 +83,19 @@ final class FeedImageDataLoaderCacheDecoratorTests: XCTestCase, FeedImageDataLoa
         XCTAssertEqual(loader.cancelledURLs, [url])
     }
     
+    func test_load_messagesCacheToSaveImageDataOnLoaderSuccess() {
+        
+        let (sut, loader, cache) = makeSUT()
+        
+        let url = anyURL()
+        _ = sut.loadImageData(from: url) { _ in }
+        let imageData = Data("image data".utf8)
+        loader.complete(with: imageData)
+        
+        XCTAssertEqual(cache.saveRequestsURLs, [url])
+        XCTAssertEqual(cache.saveRequestsData, [imageData])
+    }
+    
     //MARK: - Helpers
     
     private func makeSUT(
@@ -98,6 +121,14 @@ final class FeedImageDataLoaderCacheDecoratorTests: XCTestCase, FeedImageDataLoa
     private class FeedImageDataCacheSpy: FeedImageDataCache {
         
         private(set) var messages = [(data: Data, url: URL, completion: (FeedImageDataCache.Result) -> Void)]()
+        
+        var saveRequestsURLs: [URL] {
+            messages.map(\.url)
+        }
+        
+        var saveRequestsData: [Data] {
+            messages.map(\.data)
+        }
         
         func save(_ data: Data, for url: URL, completion: @escaping (FeedImageDataCache.Result) -> Void) {
             
