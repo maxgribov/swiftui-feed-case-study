@@ -6,15 +6,19 @@
 //
 
 import UIKit
+import Combine
 import Feed
 
 public final class FeedUIComposer {
     
     private init() {}
     
-    public static func feedComposedWith(feedLoader: FeedLoader, imageLoader: FeedImageDataLoader) -> FeedViewController {
+    public static func feedComposedWith(
+        feedLoader: @escaping () -> AnyPublisher<[FeedImage], Error>,
+        imageLoader: FeedImageDataLoader
+    ) -> FeedViewController {
         
-        let presentationAdapter = FeedLoaderPresentationAdapter(feedLoader: MainQueueDispatchDecorator(decoratee: feedLoader))
+        let presentationAdapter = FeedLoaderPresentationAdapter(feedLoader: feedLoader)
         let refreshController = FeedRefreshViewController(delegate: presentationAdapter)
         let feedController = FeedViewController(refreshController: refreshController)
         
@@ -122,10 +126,12 @@ private final class FeedImagePresentationAdapter: FeedImageCellControllerDelegat
 
 private final class FeedLoaderPresentationAdapter: FeedRefreshViewControllerDelegate {
     
-    private let feedLoader: FeedLoader
     var presenter: FeedPresenter?
     
-    init(feedLoader: FeedLoader) {
+    private let feedLoader: () -> AnyPublisher<[FeedImage], Error>
+    private var cancellable: AnyCancellable?
+    
+    init(feedLoader: @escaping () -> AnyPublisher<[FeedImage], Error>) {
         
         self.feedLoader = feedLoader
     }
@@ -134,15 +140,17 @@ private final class FeedLoaderPresentationAdapter: FeedRefreshViewControllerDele
         
         presenter?.didStartLoadingFeed()
         
-        feedLoader.load { [weak self] result in
+        cancellable = feedLoader().sink { [weak self] completion in
             
-            switch result {
-            case let .success(feed):
-                self?.presenter?.didFinishLoadingFeed(with: feed)
-                
+            switch completion {
+            case .finished: break
             case let .failure(error):
                 self?.presenter?.didFinishLoadingFeed(with: error)
             }
+            
+        } receiveValue: { [weak self] feed in
+            
+            self?.presenter?.didFinishLoadingFeed(with: feed)
         }
     }
 }

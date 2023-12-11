@@ -7,6 +7,7 @@
 
 import XCTest
 import UIKit
+import Combine
 import Feed
 import FeedIOS
 
@@ -255,7 +256,7 @@ final class FeedViewControllerTests: XCTestCase {
     private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: FeedViewController, loader: LoaderSpy) {
         
         let loader = LoaderSpy()
-        let sut = FeedUIComposer.feedComposedWith(feedLoader: loader, imageLoader: loader)
+        let sut = FeedUIComposer.feedComposedWith(feedLoader: loader.loadPublisher, imageLoader: loader)
         trackForMemoryLeaks(sut, file: file, line: line)
         trackForMemoryLeaks(loader, file: file, line: line)
         
@@ -501,5 +502,20 @@ private extension UIImage {
             ctx.cgContext.setFillColor(color.cgColor)
             ctx.cgContext.fill(rect)
         }
+    }
+}
+
+extension FeedLoader {
+    
+    func loadPublisher() -> AnyPublisher<[FeedImage], Error> {
+        
+        Deferred { Future { promise in
+            
+            load { completion in
+                
+                promise(completion)
+            }
+            
+        }}.eraseToAnyPublisher()
     }
 }
